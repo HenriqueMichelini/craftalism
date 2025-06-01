@@ -1,0 +1,4 @@
+name: craftalism
+version: '1.0-SNAPSHOT'
+main: HenriqueMichelini.craftalism.Craftalism
+api-version: '1.21'
