@@ -1,9 +1,10 @@
 plugins {
-    id 'java'
-    id("xyz.jpenilla.run-paper") version "2.3.1"
+    id "java"
+    id "xyz.jpenilla.run-paper" version "2.3.1"
+    id "io.github.goooler.shadow" version "8.1.8"
 }
 
-group = 'HenriqueMichelini'
+group = 'io.github.HenriqueMichelini'
 version = '1.0-SNAPSHOT'
 
 repositories {
@@ -20,6 +21,8 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.5-R0.1-SNAPSHOT")
+    compileOnly files("libs/craftalism_economy-1.2-SNAPSHOT.jar") // Changed from implementation
+    implementation "dev.triumphteam:triumph-gui:3.1.11"
 }
 
 tasks {
@@ -56,4 +59,14 @@ processResources {
     filesMatching('plugin.yml') {
         expand props
     }
+}
+
+shadowJar {
+    relocate("dev.triumphteam.gui", "io.github.HenriqueMichelini.craftalism.shaded.gui") // Relocate TriumphGUI
+    archiveClassifier.set('') // Remove the "-all" suffix from the JAR file
+    minimize() // Optional: Minimize the JAR by removing unused classes (use with caution)
+}
+
+tasks.build {
+    dependsOn(shadowJar) // Ensure shadowJar is run during the build task
 }
