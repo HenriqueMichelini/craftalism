@@ -1,42 +1,42 @@
 # 🧱 Craftalism - Modular Minecraft Economy System
-Craftalism é um ecossistema modular que integra plugins de Minecraft, uma API REST centralizada, e um painel administrativo web — tudo orquestrado com Docker e PostgreSQL.
+Craftalism is a modular ecosystem that integrates Minecraft plugins, a centralized REST API, and a web administrative panel — all orchestrated with Docker and PostgreSQL.
 
-## 🚀 Visão Geral
-O Craftalism é um projeto voltado à integração de sistemas Minecraft com serviços modernos de backend e web.
-Seu principal objetivo é demonstrar boas práticas de arquitetura distribuída, com foco em modularidade, escalabilidade e documentação.
+## 🚀 Overview
+Craftalism is a project focused on integrating Minecraft systems with modern backend and web services.
+Its main objective is to demonstrate best practices in distributed architecture, focusing on modularity, scalability, and documentation.
 
-### Arquitetura de alto nível:
+### High-level architecture:
 ```
-[ Plugin Economy ] ⇄ [ Craftalism API ] ⇄ [ PostgreSQL Database ]
+[ Economy Plugin ] ⇄ [ Craftalism API ] ⇄ [ PostgreSQL Database ]
                               ⇅
-                      [ Dashboard Web ]
+                      [ Web Dashboard ]
 ```
 
-| Repositório                                                                                   | Descrição                                         | Stack Principal          |
+| Repository                                                                                    | Description                                       | Main Stack               |
 | --------------------------------------------------------------------------------------------- | ------------------------------------------------- | ------------------------ |
-| [`craftalism-plugin-economy`](https://github.com/henriquemichelini/craftalism-plugin-economy) | Plugin de economia para Minecraft.                | Java (Paper/Spigot)      |
-| [`craftalism-api`](https://github.com/henriquemichelini/craftalism-api)                       | API REST central para persistência e comunicação. | Spring Boot + PostgreSQL |
-| [`craftalism-dashboard`](https://github.com/henriquemichelini/craftalism-dashboard)           | Painel web para administração de dados.           | planejando               |
-| [`craftalism-database`](https://github.com/henriquemichelini/craftalism-database)             | Scripts e migrações SQL.                          | SQL + Flyway             |
-| [`craftalism-infra`](https://github.com/henriquemichelini/craftalism-infra)                   | Infraestrutura Docker e CI/CD.                    | Docker + GitHub Actions  |
+| [`craftalism-plugin-economy`](https://github.com/henriquemichelini/craftalism-plugin-economy) | Economy plugin for Minecraft.                     | Java (Paper/Spigot)      |
+| [`craftalism-api`](https://github.com/henriquemichelini/craftalism-api)                       | Central REST API for persistence and communication. | Spring Boot + PostgreSQL |
+| [`craftalism-dashboard`](https://github.com/henriquemichelini/craftalism-dashboard)           | Web panel for data administration.                | planning                 |
+| [`craftalism-database`](https://github.com/henriquemichelini/craftalism-database)             | SQL scripts and migrations.                       | SQL + Flyway             |
+| [`craftalism-infra`](https://github.com/henriquemichelini/craftalism-infra)                   | Docker infrastructure and CI/CD.                  | Docker + GitHub Actions  |
 
-## ⚙️ Arquitetura Técnica
-O projeto segue uma abordagem multi-repositório, onde cada módulo é independente, mas interoperável via contratos REST e containers Docker.
-Todos os serviços podem ser orquestrados localmente via docker-compose.
-### Principais tecnologias:
+## ⚙️ Technical Architecture
+The project follows a multi-repository approach, where each module is independent but interoperable via REST contracts and Docker containers.
+All services can be orchestrated locally via docker-compose.
+### Main technologies:
 - **Backend**: Spring Boot 3, JPA, Flyway, Swagger/OpenAPI
 - **Frontend**: Next.js, shadcn/ui, Tailwind CSS
-- **Infraestrutura**: Docker, GitHub Actions, Oracle Cloud (Always Free)
-- **Banco de Dados**: PostgreSQL
+- **Infrastructure**: Docker, GitHub Actions, Oracle Cloud (Always Free)
+- **Database**: PostgreSQL
 - **Minecraft Integration**: PaperMC (Java)
 
-## 🧠 Funcionalidades Principais
-- Sistema de economia com saldo, transações e histórico.
-- API REST para manipulação e consulta de dados.
-- Dashboard administrativo com visualização em tempo real.
-- Arquitetura escalável, modular e versionada.
+## 🧠 Main Features
+- Economy system with balance, transactions, and history.
+- REST API for data manipulation and querying.
+- Administrative dashboard with real-time visualization.
+- Scalable, modular, and versioned architecture.
 
-## 🗂️ Estrutura do Projeto
+## 🗂️ Project Structure
 ```
 craftalism/
 ├── docs/
@@ -47,33 +47,33 @@ craftalism/
 └── README.md
 ```
 
-## 🐳 Execução (modo desenvolvimento)
+## 🐳 Execution (development mode)
 ```
 git clone https://github.com/henriquemichelini/craftalism.git
 cd craftalism
 docker compose up -d
 ```
-- API disponível em: http://localhost:8080
+- API available at: http://localhost:8080
 - Dashboard: http://localhost:3000
 - PostgreSQL: http://localhost:5432
 
-## 📖 Documentação Técnica
-Toda a documentação detalhada (diagramas, endpoints, entidades e fluxos) está disponível em:
+## 📖 Technical Documentation
+All detailed documentation (diagrams, endpoints, entities, and flows) is available at:
 `📄 Craftalism_Documentation.pdf`
 
-## 🧰 Requisitos
+## 🧰 Requirements
 - Docker & Docker Compose
 - Java 17+
-- planejando (dashboard)
+- planning (dashboard)
 - PostgreSQL 15+
 
-## 💻 Desenvolvedor
+## 💻 Developer
 **Henrique Michelini**
 - [📎 LinkedIn](https://www.linkedin.com/in/henrique-giammellaro-michelini/)
 - [📦 GitHub](https://github.com/HenriqueMichelini)
 
-## 📜 Licença
-Este projeto é distribuído sob a licença MIT. Consulte o arquivo LICENSE para mais detalhes.
+## 📜 License
+This project is distributed under the MIT license. See the LICENSE file for more details.
 
 ![Java](https://img.shields.io/badge/Java-17-orange)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.0-green)
