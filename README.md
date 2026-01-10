@@ -1,4 +1,6 @@
 # 🧱 Craftalism - Modular Minecraft Economy System
+(Note: This project is still under development.)
+
 Craftalism is a modular ecosystem that integrates Minecraft plugins, a centralized REST API, and a web administrative panel — all orchestrated with Docker and PostgreSQL.
 
 ## 🚀 Overview
