@@ -26,9 +26,9 @@ Its main objective is to demonstrate best practices in distributed architecture,
 The project follows a multi-repository approach, where each module is independent but interoperable via REST contracts and Docker containers.
 All services can be orchestrated locally via docker-compose.
 ### Main technologies:
-- **Backend**: Spring Boot 3, JPA, Flyway, Swagger/OpenAPI
-- **Frontend**: Next.js, shadcn/ui, Tailwind CSS
-- **Infrastructure**: Docker, GitHub Actions, Oracle Cloud (Always Free)
+- **Backend**: Spring Boot 4, Hibernate/JPA, Flyway, Swagger/OpenAPI
+- **Frontend**: React, JavaScript, TypeScript and Tailwind CSS
+- **Infrastructure**: Docker, GitHub Actions, Oracle Cloud Infra
 - **Database**: PostgreSQL
 - **Minecraft Integration**: PaperMC (Java)
 
