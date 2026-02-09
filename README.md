@@ -18,7 +18,7 @@ Its main objective is to demonstrate best practices in distributed architecture,
 | --------------------------------------------------------------------------------------------- | ------------------------------------------------- | ------------------------ |
 | [`craftalism-economy`](https://github.com/henriquemichelini/craftalism-economy)        | Economy plugin for Minecraft.                     | Java (Paper/Spigot)      |
 | [`craftalism-api`](https://github.com/henriquemichelini/craftalism-api)                       | Central REST API for persistence and communication. | Spring Boot + PostgreSQL + Flyway |
-| [`craftalism-dashboard`](https://github.com/henriquemichelini/craftalism-dashboard)           | Web panel for data administration.                | React + JS/TS + Tailwind |
+| [`craftalism-dashboard`](https://github.com/henriquemichelini/craftalism-dashboard)           | Web panel for data visualization.                | React + JS/TS + Tailwind |
 | [`craftalism-infra`](https://github.com/henriquemichelini/craftalism-infra)                   | Docker infrastructure and CI/CD.                  | Docker + GitHub Actions  |
 
 ## ⚙️ Technical Architecture
