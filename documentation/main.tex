@@ -1,22 +1,28 @@
 \documentclass[a4paper,12pt]{article}
 
-\usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[english]{babel}
 \usepackage{graphicx}
-\usepackage{hyperref}
 \usepackage{amsmath}
 \usepackage{float}
 \usepackage{geometry}
 \geometry{margin=2cm}
+\usepackage{hyperref}
+
+\hypersetup{
+	colorlinks=true,
+	linkcolor=black,
+	urlcolor=blue
+}
 
 \begin{document}
 	
+	\pagenumbering{gobble}
 	\input{cover}
-	\tableofcontents
 	\newpage
 	
-	\input{sections/01-introduction}
+	\pagenumbering{arabic}
+	\tableofcontents
 	\newpage
 	
 \end{document}
