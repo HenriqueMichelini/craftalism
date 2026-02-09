@@ -1,0 +1,45 @@
+\section{Project Overview}
+
+\subsection{High-Level Vision}
+
+	Craftalism is a modular ecosystem for managing in-game economies with persistent data and external visualization.
+
+\subsection{What is Craftalism}
+
+	\textbf{Craftalism} is a modular ecosystem that extends Minecraft servers with a persistent and observable economic layer. It consists of several interconnected services, each with a specific responsibility:
+	
+		\begin{itemize}
+			
+			\item \textbf{craftalism-api}: A Java Spring Boot application that stores, processes, and exposes economic data through APIs. It also manages database migrations via Flyway.
+			
+			\item \textbf{craftalism-economy}: A Java PaperMC plugin that captures in-game actions, handles economic operations, and communicates with the API.
+			
+			\item \textbf{craftalism-dashboard}: A web application that visualizes economic data through interactive charts and reports.
+			
+			\item \textbf{craftalism-infra}: A cloud infrastructure module that ensures consistent and reliable deployment across environments.
+			
+		\end{itemize}
+		
+	By separating gameplay logic from persistence, analytics, and operations, Craftalism is designed to be flexible, maintainable, and scalable as new features and usage demands grow.
+
+\subsection{Core Problems Solved}
+
+	Craftalism addresses several challenges commonly faced when adding persistent economic systems to Minecraft servers:
+	
+	\begin{itemize}
+		
+		\item \textbf{Lack of persistent economy data}: In vanilla Minecraft, in-game transactions are transient and lost when servers restart. Craftalism provides a persistent backend that reliably stores economic data.
+		
+		\item \textbf{No centralized analytics}: Server operators have limited insight into player behavior and economic trends. The Craftalism dashboard visualizes economic data through charts and reports.
+		
+		\item \textbf{Difficulty integrating plugins with external systems}: Plugins often mix gameplay logic with data storage, making maintenance and scalability hard. Craftalism separates gameplay, persistence, and analytics.
+		
+		\item \textbf{Deployment and environment inconsistencies}: Hosting a Minecraft server with additional services in the cloud can be complex. Craftalism-infra provides standardized infrastructure and deployment workflows.
+		
+		\item \textbf{Scalability limitations}: As servers grow or new modules are added, naive implementations may break. Craftalism is designed to handle increased usage and new features with minimal friction.
+		
+	\end{itemize}
+
+\subsection{Non-Functional Goals}
+
+\subsection{Design Principles}
