@@ -16,10 +16,9 @@ Its main objective is to demonstrate best practices in distributed architecture,
 
 | Repository                                                                                    | Description                                       | Main Stack               |
 | --------------------------------------------------------------------------------------------- | ------------------------------------------------- | ------------------------ |
-| [`craftalism-plugin-economy`](https://github.com/henriquemichelini/craftalism-plugin-economy) | Economy plugin for Minecraft.                     | Java (Paper/Spigot)      |
-| [`craftalism-api`](https://github.com/henriquemichelini/craftalism-api)                       | Central REST API for persistence and communication. | Spring Boot + PostgreSQL |
+| [`craftalism-plugin-economy`](https://github.com/henriquemichelini/craftalism-economy)        | Economy plugin for Minecraft.                     | Java (Paper/Spigot)      |
+| [`craftalism-api`](https://github.com/henriquemichelini/craftalism-api)                       | Central REST API for persistence and communication. | Spring Boot + PostgreSQL + Flyway |
 | [`craftalism-dashboard`](https://github.com/henriquemichelini/craftalism-dashboard)           | Web panel for data administration.                | React + JS/TS + Tailwind |
-| [`craftalism-database`](https://github.com/henriquemichelini/craftalism-database)             | SQL scripts and migrations.                       | SQL + Flyway             |
 | [`craftalism-infra`](https://github.com/henriquemichelini/craftalism-infra)                   | Docker infrastructure and CI/CD.                  | Docker + GitHub Actions  |
 
 ## ⚙️ Technical Architecture
@@ -28,7 +27,7 @@ All services can be orchestrated locally via docker-compose.
 ### Main technologies:
 - **Backend**: Spring Boot 4, Hibernate/JPA, Flyway, Swagger/OpenAPI
 - **Frontend**: React, JavaScript, TypeScript and Tailwind CSS
-- **Infrastructure**: Docker, GitHub Actions, Oracle Cloud Infra
+- **Infrastructure**: Docker, GitHub Actions, Oracle Cloud Infrastructure
 - **Database**: PostgreSQL
 - **Minecraft Integration**: PaperMC (Java)
 
@@ -38,36 +37,9 @@ All services can be orchestrated locally via docker-compose.
 - Administrative dashboard with real-time visualization.
 - Scalable, modular, and versioned architecture.
 
-## 🗂️ Project Structure
-```
-craftalism/
-├── docs/
-│   ├── Craftalism_Documentation.pdf
-│   └── architecture.drawio
-├── compose/
-│   └── docker-compose.yml
-└── README.md
-```
-
-## 🐳 Execution (development mode)
-```
-git clone https://github.com/henriquemichelini/craftalism.git
-cd craftalism
-docker compose up -d
-```
-- API available at: http://localhost:8080
-- Dashboard: http://localhost:3000
-- PostgreSQL: http://localhost:5432
-
 ## 📖 Technical Documentation
 All detailed documentation (diagrams, endpoints, entities, and flows) is available at:
 `📄 Craftalism_Documentation.pdf`
-
-## 🧰 Requirements
-- Docker & Docker Compose
-- Java 17+
-- planning (dashboard)
-- PostgreSQL 15+
 
 ## 💻 Developer
 **Henrique Michelini**
