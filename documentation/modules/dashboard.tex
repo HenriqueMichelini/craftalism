@@ -1,0 +1,100 @@
+% =============================================================================
+% modules/dashboard.tex — Craftalism Dashboard
+% =============================================================================
+
+\modulelang{TypeScript 5 · React 19 · Tailwind CSS 3}
+
+\chapter{Craftalism Dashboard}
+\label{ch:dashboard}
+
+\textcolor{CraftGray}{\textit{Admin web UI — operational visibility into players, balances, and transactions}}
+
+\bigskip
+
+\section{Overview}
+
+The Dashboard is a read-oriented single-page application that lets administrators inspect the current state of the economy. It connects to the Craftalism API through an Nginx reverse proxy and presents player records, balance amounts, and transaction history in a consistent table-based interface. The frontend has no direct database access and no authentication layer of its own.
+
+\section{Responsibilities}
+
+\begin{itemize}
+  \item Renders tabular views of all players, balances, and transactions sourced from the Craftalism API.
+  \item Displays loading, empty, and error states for every data view.
+  \item Provides a retry action on failed API requests without requiring a full page reload.
+  \item Formats dates and currency amounts consistently across all views using centralized utility functions.
+  \item Proxies all \code{/api/*} requests to the Craftalism API through Nginx to avoid browser CORS restrictions.
+\end{itemize}
+
+\section{Architecture and Design}
+
+The application uses a feature-first structure. Each dashboard section owns its view component and table column configuration. Shared concerns — the API client, data-fetching hook, and formatting utilities — live in dedicated cross-cutting modules.
+
+\subsection{Layer Descriptions}
+
+\textbf{Feature view layer} (\code{pages/Dashboard/views/}): \code{PlayersView}, \code{TransactionsView}, and \code{BalancesView}. Each declares its column configuration and passes it to \code{DynamicTable}.
+
+\textbf{Reusable table layer} (\code{components/ui/Table/}): \code{DynamicTable} accepts a column configuration and data array, and delegates to separate loading, empty, and error state components.
+
+\textbf{Data layer} (\code{api/}): \code{apiClient} is a typed fetch wrapper. Domain modules (\code{playersApi}, \code{transactionsApi}, \code{balancesApi}) expose typed methods over it.
+
+\textbf{State layer} (\code{hooks/useTableData.ts}): A single hook that centralizes async fetch, loading state, error state, and refetch behavior for all views.
+
+\subsection{Runtime Configuration Injection}
+
+In Docker, \code{docker-entrypoint.sh} generates \code{/runtime-config.js} before Nginx starts, injecting \code{VITE\_API\_URL} and \code{VITE\_API\_TIMEOUT} into the browser environment. If \code{VITE\_API\_URL} points to \code{localhost} or \code{127.0.0.1}, the entrypoint rewrites it to \code{/api} to prevent CORS errors.
+
+\section{Tech Stack}
+
+\rowcolors{2}{CraftLight}{white}
+\begin{tabularx}{\linewidth}{@{} L{3.0cm} L{5.2cm} X @{}}
+  \toprule
+  {\tableheadstyle Category} &
+  {\tableheadstyle Technology} &
+  {\tableheadstyle Notes} \\
+  \midrule
+  Language      & TypeScript 5                   & Strict mode enabled \\
+  Framework     & React 19                       & \\
+  Build Tool    & Vite 7                         & Dev server proxies \code{/api} \\
+  Styling       & Tailwind CSS 3                 & \\
+  Icons         & Lucide React                   & \\
+  Linting       & ESLint 9                       & React Hooks + Tailwind plugins \\
+  Runtime       & Nginx                          & Serves static build; proxies \code{/api/**} \\
+  Packaging     & Docker multi-stage image       & Node build stage + Nginx runtime \\
+  \bottomrule
+\end{tabularx}
+
+\section{Configuration}
+
+\rowcolors{2}{CraftLight}{white}
+\begin{tabularx}{\linewidth}{@{} L{4.8cm} L{3.2cm} C{1.6cm} X @{}}
+  \toprule
+  {\tableheadstyle Variable} &
+  {\tableheadstyle Default} &
+  {\tableheadstyle Required} &
+  {\tableheadstyle Description} \\
+  \midrule
+  \code{VITE\_API\_PROXY\_TARGET} & \code{http://localhost:3000} & No & Vite dev server proxy target. Development only. \\
+  \code{VITE\_API\_URL}           & ---                          & No & Browser-visible API base URL. Rewritten to \code{/api} if pointing to localhost. \\
+  \code{VITE\_API\_TIMEOUT}       & ---                          & No & Request timeout in milliseconds. \\
+  \code{API\_UPSTREAM\_URL}       & \code{http://craftalism-api:8080} & No & Nginx upstream for \code{/api/**} reverse proxy. \\
+  \bottomrule
+\end{tabularx}
+
+\section{Known Limitations}
+
+\begin{itemize}
+  \item The dashboard has no authentication layer. Anyone who can reach port 8080 can view all economy data.
+  \item ``Add Player'' and ``Add Balance'' action buttons are UI placeholders; no create flows are implemented or wired to the API.
+  \item Sidebar navigation items are presentational only; routing between sections is not implemented.
+  \item No automated tests exist for the API client, hooks, or table components.
+\end{itemize}
+
+\section{Roadmap}
+
+\begin{itemize}
+  \item Add OAuth2 or session-based authentication and authorization to the dashboard.
+  \item Implement React Router and route-driven navigation for all dashboard sections.
+  \item Build create, update, and delete flows for players, balances, and transactions.
+  \item Add unit and integration tests for the API client, hooks, and table rendering.
+  \item Add a CI pipeline with lint, typecheck, build, and test stages.
+\end{itemize}

@@ -1,0 +1,136 @@
+% =============================================================================
+% modules/authorization_server.tex — Craftalism Authorization Server
+% =============================================================================
+
+\modulelang{Java 17 · Spring Authorization Server · OAuth 2.1 / OIDC}
+
+\chapter{Craftalism Authorization Server}
+\label{ch:authorization-server}
+
+\textcolor{CraftGray}{\textit{OAuth 2.1 / OIDC token issuer — machine-to-machine authentication for internal services}}
+
+\bigskip
+
+% =============================================================================
+\section{Overview}
+% =============================================================================
+
+The Authorization Server is the authentication anchor of the Craftalism platform. It issues short-lived, RSA-signed JWT access tokens to trusted internal clients using the OAuth 2.0 \code{client\_credentials} grant. Downstream services (primarily the Craftalism API) validate these tokens locally by fetching the server's public keys from its JWKS endpoint — no validation round-trip is required per request. The Authorization Server's only registered client is the Minecraft plugin.
+
+% =============================================================================
+\section{Responsibilities}
+% =============================================================================
+
+\begin{itemize}
+  \item Issues RSA-signed JWT access tokens via \code{POST /oauth2/token} using the \code{client\_credentials} grant.
+  \item Publishes RSA public keys at \code{GET /oauth2/jwks} for local token verification by downstream services.
+  \item Exposes OIDC discovery metadata at \code{GET /.well-known/openid-configuration}.
+  \item Exposes OAuth 2.0 server metadata at \code{GET /.well-known/oauth-authorization-server}.
+  \item Supports token introspection (\code{/oauth2/introspect}) and revocation (\code{/oauth2/revoke}).
+  \item Seeds a single registered OAuth client (\code{minecraft-server} by default) idempotently on every startup.
+  \item Enforces a deny-by-default HTTP policy: all paths not explicitly listed as public return 401/403.
+\end{itemize}
+
+% =============================================================================
+\section{Architecture and Design}
+% =============================================================================
+
+The service is a Spring Boot application with two distinct security filter chains and a startup provisioning routine.
+
+\subsection{Filter Chain Model}
+
+Two filter chains run in priority order:
+
+\textbf{Chain 1 — Protocol chain (Order 1):} Handles all \code{/oauth2/**} and discovery endpoints according to OAuth 2.0/OIDC protocol rules. Managed entirely by Spring Authorization Server.
+
+\textbf{Chain 2 — Fallback chain (Order 2):} Stateless and session-less. Permits only the paths listed below; all other requests are denied with \code{401} or \code{403}.
+
+\rowcolors{2}{CraftLight}{white}
+\begin{tabularx}{\linewidth}{@{} L{7.5cm} X @{}}
+  \toprule
+  {\tableheadstyle Permitted path} & {\tableheadstyle Reason} \\
+  \midrule
+  \code{GET /actuator/health}                       & Health check for orchestrators. \\
+  \code{GET /oauth2/jwks}                           & Public key material for JWT verification. \\
+  \code{GET /.well-known/oauth-authorization-server} & OAuth 2.0 discovery. \\
+  \code{GET /.well-known/openid-configuration}      & OIDC discovery. \\
+  \bottomrule
+\end{tabularx}
+
+\subsection{Key Configuration}
+
+RSA keys are loaded from environment variables (\code{RSA\_PRIVATE\_KEY} / \code{RSA\_PUBLIC\_KEY}) at startup by \code{RsaKeyConfig}. If neither variable is set, the service generates an ephemeral key pair.
+
+\important{Ephemeral keys are destroyed on service restart. Any JWT issued with an ephemeral key becomes unverifiable after a restart. Never use ephemeral keys in persistent environments.}
+
+\subsection{Client Provisioning}
+
+\code{ClientRegistrationService} seeds one OAuth client (the Minecraft plugin) on every startup. The operation is idempotent: if the client already exists in the database, no change is made. Client credentials, scopes, and grant types are driven by environment variables.
+
+% =============================================================================
+\section{Tech Stack}
+% =============================================================================
+
+\rowcolors{2}{CraftLight}{white}
+\begin{tabularx}{\linewidth}{@{} L{3.0cm} L{5.2cm} X @{}}
+  \toprule
+  {\tableheadstyle Category} &
+  {\tableheadstyle Technology} &
+  {\tableheadstyle Notes} \\
+  \midrule
+  Language      & Java 17                            & \\
+  Framework     & Spring Boot 3.5                    & \\
+  Security      & Spring Security, Spring Authorization Server & \\
+  Database Access & Spring JDBC                      & JDBC repositories for clients/authorizations \\
+  Database (runtime) & PostgreSQL                    & \\
+  Database (tests)   & H2 (PostgreSQL compat. mode)  & \\
+  Build Tool    & Gradle Wrapper                     & \\
+  Packaging     & Docker multi-stage image           & \\
+  Testing       & JUnit 5, Spring Test               & \\
+  \bottomrule
+\end{tabularx}
+
+% =============================================================================
+\section{Configuration}
+% =============================================================================
+
+\rowcolors{2}{CraftLight}{white}
+\begin{tabularx}{\linewidth}{@{} L{4.8cm} L{2.6cm} C{1.6cm} X @{}}
+  \toprule
+  {\tableheadstyle Variable} &
+  {\tableheadstyle Default} &
+  {\tableheadstyle Required} &
+  {\tableheadstyle Description} \\
+  \midrule
+  \code{DB\_URL}                   & ---                          & \textbf{Yes} & JDBC connection string. \\
+  \code{DB\_USER}                  & ---                          & \textbf{Yes} & Database username. \\
+  \code{DB\_PASSWORD}              & ---                          & \textbf{Yes} & Database password. \\
+  \code{MINECRAFT\_CLIENT\_SECRET} & ---                          & \textbf{Yes} & Secret for the seeded OAuth client. \\
+  \code{AUTH\_ISSUER\_URI}         & \code{http://localhost:9000}  & No           & JWT issuer URI. Must match downstream configuration. \\
+  \code{MINECRAFT\_CLIENT\_ID}     & \code{minecraft-server}      & No           & Client ID for the seeded OAuth client. \\
+  \code{RSA\_PRIVATE\_KEY}         & ---                          & No           & PEM RSA private key (literal \code{\textbackslash n} separators). Ephemeral fallback if absent. \\
+  \code{RSA\_PUBLIC\_KEY}          & ---                          & No           & PEM RSA public key (literal \code{\textbackslash n} separators). Ephemeral fallback if absent. \\
+  \bottomrule
+\end{tabularx}
+
+% =============================================================================
+\section{Known Limitations}
+% =============================================================================
+
+\begin{itemize}
+  \item No \code{generate-keys.sh} script exists in this repository, despite being referenced in documentation and the deployment repository. RSA key pairs must be generated manually.
+  \item Integration tests run against H2 in PostgreSQL compatibility mode, not real PostgreSQL. Schema differences may produce false passes.
+  \item Token introspection and revocation endpoints have no documented usage examples.
+  \item No CI pipeline is configured.
+\end{itemize}
+
+% =============================================================================
+\section{Roadmap}
+% =============================================================================
+
+\begin{itemize}
+  \item Add a \code{generate-keys.sh} utility script for RSA key pair generation and formatting.
+  \item Add containerized integration tests that run against real PostgreSQL.
+  \item Document introspection and revocation usage with curl examples.
+  \item Configure a CI pipeline with build and test stages.
+\end{itemize}

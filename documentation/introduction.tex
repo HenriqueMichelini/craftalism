@@ -1,0 +1,88 @@
+% =============================================================================
+% introduction.tex — Project-level introduction chapter
+% This chapter is NOT a module. It describes the system as a whole.
+% =============================================================================
+
+\chapter*{Project Introduction}
+\addcontentsline{toc}{chapter}{Project Introduction}
+\markboth{Project Introduction}{}
+
+% -----------------------------------------------------------------------------
+\section*{What Craftalism Is}
+% -----------------------------------------------------------------------------
+
+Craftalism is a modular, production-oriented economy platform that integrates a Minecraft game server with a fully externalized web backend. Rather than storing economy state inside the game server — the conventional approach for Minecraft plugins — the platform delegates all balance and transaction data to a centralized REST API. The Minecraft plugin becomes a thin, authenticated client: it handles commands and player interaction, then delegates all state reads and writes to the backend over HTTP.
+
+This architecture allows the economy to be administered, audited, and observed entirely outside the game, through a web dashboard, while the game server itself remains stateless with respect to financial data.
+
+% -----------------------------------------------------------------------------
+\section*{System Architecture}
+% -----------------------------------------------------------------------------
+
+The platform is composed of five independent services, each in its own repository. All inter-service communication uses HTTP with OAuth2 bearer tokens.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[node distance=1.6cm and 2.4cm]
+
+  % Nodes
+  \node[external]                         (minecraft) {Minecraft\\Server\\(Plugin)};
+  \node[service, right=of minecraft]      (api)       {Craftalism\\API};
+  \node[database, right=of api]           (db)        {PostgreSQL};
+  \node[service, below=of api]            (auth)      {Authorization\\Server};
+  \node[external, right=of auth]          (jwks)      {JWKS\\(public keys)};
+  \node[service, above=of api, yshift=0.4cm] (dashboard) {Dashboard};
+
+  % Edges
+  \draw[flow] (minecraft) -- node[flowlabel, above]{REST + JWT} (api);
+  \draw[flow] (api)       -- node[flowlabel, above]{reads/writes} (db);
+  \draw[flow] (auth)      -- (db);
+  \draw[flow] (minecraft) -- node[flowlabel, left]{token request} (auth);
+  \draw[flow] (api)       -- node[flowlabel, right]{validate via} (jwks);
+  \draw[flow] (auth)      -- node[flowlabel, below]{publishes} (jwks);
+  \draw[flow] (dashboard) -- node[flowlabel, right]{REST} (api);
+
+\end{tikzpicture}
+\caption{Craftalism system topology}
+\label{fig:system-topology}
+\end{figure}
+
+\begin{enumerate}
+  \item The Minecraft plugin authenticates with the \textbf{Authorization Server} on startup using the \code{client\_credentials} OAuth2 grant, and caches the resulting JWT access token.
+  \item All subsequent plugin calls to the \textbf{Craftalism API} carry that JWT as a \code{Bearer} token in the \code{Authorization} header.
+  \item The API validates tokens \emph{locally} by fetching the Authorization Server's public keys from \code{/oauth2/jwks} — no per-request round-trip to the auth server is required.
+  \item The \textbf{Dashboard} calls the same API through an Nginx reverse proxy and renders the data for administrators.
+  \item Both the API and the Authorization Server persist state to a shared \textbf{PostgreSQL} instance, in separate databases (\code{craftalism} and \code{authserver}).
+\end{enumerate}
+
+% -----------------------------------------------------------------------------
+\section*{Repository Index}
+% -----------------------------------------------------------------------------
+
+\rowcolors{2}{CraftLight}{white}
+\begin{tabularx}{\linewidth}{@{} L{3.4cm} L{5.0cm} X @{}}
+  \toprule
+  {\tableheadstyle Repository} &
+  {\tableheadstyle Primary Stack} &
+  {\tableheadstyle Purpose} \\
+  \midrule
+  \code{craftalism-api}                  & Java 17, Spring Boot 3.5, JPA   & Core REST API for players, balances, and transactions. \\
+  \code{craftalism-authorization-server} & Java 17, Spring Authorization Server & OAuth2/OIDC token issuer for internal services. \\
+  \code{craftalism-economy}              & Java 21, Paper API 1.21.4       & Minecraft plugin; delegates all economy state to the API. \\
+  \code{craftalism-dashboard}            & React 19, TypeScript 5, Vite 7  & Admin web UI for read-oriented data visibility. \\
+  \code{craftalism-deployment}           & Docker Compose, PostgreSQL 18   & Container orchestration for the full platform. \\
+  \bottomrule
+\end{tabularx}
+
+% -----------------------------------------------------------------------------
+\section*{Shared Conventions}
+% -----------------------------------------------------------------------------
+
+The following conventions apply across all modules and are referenced throughout this document.
+
+\begin{itemize}
+  \item \textbf{Authentication:} All API traffic from internal services is authenticated with a short-lived JWT issued via the \code{client\_credentials} grant. Tokens are validated locally using the published JWKS.
+  \item \textbf{Error responses:} The API returns RFC 9457 \code{ProblemDetail} payloads for all error conditions, with a consistent set of extension fields: \code{type}, \code{detail}, \code{status}, \code{timestamp}, \code{path}, and \code{errors}.
+  \item \textbf{Scope enforcement:} Read operations require the \code{api:read} scope. Write operations require \code{api:write}.
+  \item \textbf{Containerization:} All services are distributed as Docker images and orchestrated with Docker Compose via the \code{craftalism-deployment} repository.
+\end{itemize}

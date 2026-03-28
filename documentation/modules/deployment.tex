@@ -1,0 +1,123 @@
+% =============================================================================
+% modules/deployment.tex — Craftalism Deployment
+% =============================================================================
+
+\modulelang{Docker Compose · PostgreSQL 18 · Nginx}
+
+\chapter{Craftalism Deployment}
+\label{ch:deployment}
+
+\textcolor{CraftGray}{\textit{Container orchestration — single-command deployment for the full platform}}
+
+\bigskip
+
+\section{Overview}
+
+The Deployment repository contains the Docker Compose configuration and environment templates needed to run the entire Craftalism platform. It contains no application source code; all services are pulled from pre-built images published to the GitHub Container Registry. A single \code{docker compose up} command starts every service in the correct dependency order.
+
+\section{Responsibilities}
+
+\begin{itemize}
+  \item Defines the full service topology and inter-service networking in \code{docker-compose.yml}.
+  \item Manages a one-shot database initializer that creates the \code{authserver} database before the Authorization Server starts.
+  \item Downloads and installs the Craftalism Economy plugin JAR into the Minecraft server container at startup using the configured \code{ECONOMY\_VERSION}.
+  \item Templates an \code{env.example} file covering all required and optional configuration for the full stack.
+  \item Exposes services on defined host ports for external access.
+\end{itemize}
+
+\section{Architecture and Design}
+
+\subsection{Service Topology}
+
+\rowcolors{2}{CraftLight}{white}
+\begin{tabularx}{\linewidth}{@{} L{4.6cm} L{4.0cm} X @{}}
+  \toprule
+  {\tableheadstyle Container} & {\tableheadstyle Image} & {\tableheadstyle Purpose} \\
+  \midrule
+  \code{craftalism-postgres}    & \code{postgres:18-alpine}                    & Primary database for API and Authorization Server. \\
+  \code{auth-db-init}           & \code{postgres:18-alpine}                    & One-shot; creates \code{authserver} DB then exits. \\
+  \code{craftalism-auth-server} & \code{ghcr.io/.../authorization-server}      & OAuth2 token issuer. \\
+  \code{craftalism-api}         & \code{ghcr.io/.../craftalism-api}            & Core REST API. \\
+  \code{craftalism-dashboard}   & \code{ghcr.io/.../craftalism-dashboard}      & Admin web UI. \\
+  \code{craftalism-minecraft}   & \code{itzg/minecraft-server}                 & Paper game server + economy plugin. \\
+  \bottomrule
+\end{tabularx}
+
+\subsection{Startup Dependency Order}
+
+\begin{enumerate}
+  \item \code{craftalism-postgres} starts and passes its health check.
+  \item \code{auth-db-init} runs and creates the \code{authserver} database, then exits.
+  \item \code{craftalism-auth-server} and \code{craftalism-api} start in parallel (both depend on a healthy PostgreSQL).
+  \item \code{craftalism-dashboard} and \code{craftalism-minecraft} start once the API is healthy.
+\end{enumerate}
+
+\subsection{Port Mapping}
+
+\rowcolors{2}{CraftLight}{white}
+\begin{tabularx}{\linewidth}{@{} L{5.2cm} C{2.4cm} X @{}}
+  \toprule
+  {\tableheadstyle Service} & {\tableheadstyle Host Port} & {\tableheadstyle Notes} \\
+  \midrule
+  Dashboard           & 8080  & HTTP. No TLS termination configured. \\
+  Craftalism API      & 3000  & HTTP. \\
+  Authorization Server & 9000 & HTTP. \\
+  Minecraft           & 25565 & Game traffic (TCP/UDP). \\
+  RCON                & 25575 & Remote console. \\
+  \bottomrule
+\end{tabularx}
+
+\section{Tech Stack}
+
+\rowcolors{2}{CraftLight}{white}
+\begin{tabularx}{\linewidth}{@{} L{3.0cm} L{5.2cm} X @{}}
+  \toprule
+  {\tableheadstyle Category} &
+  {\tableheadstyle Technology} &
+  {\tableheadstyle Notes} \\
+  \midrule
+  Orchestration & Docker Compose v2          & \\
+  Database      & PostgreSQL 18 (alpine)     & Shared instance; separate databases per service \\
+  Game Server   & \code{itzg/minecraft-server} & Paper-compatible; plugin auto-downloaded \\
+  Networking    & Docker bridge network      & All services on \code{craftalism-network} \\
+  \bottomrule
+\end{tabularx}
+
+\section{Configuration}
+
+\rowcolors{2}{CraftLight}{white}
+\begin{tabularx}{\linewidth}{@{} L{4.8cm} L{2.0cm} C{1.6cm} X @{}}
+  \toprule
+  {\tableheadstyle Variable} &
+  {\tableheadstyle Default} &
+  {\tableheadstyle Required} &
+  {\tableheadstyle Description} \\
+  \midrule
+  \code{DB\_PASSWORD}              & ---  & \textbf{Yes} & PostgreSQL password for the \code{craftalism} user. \\
+  \code{MINECRAFT\_CLIENT\_SECRET} & ---  & \textbf{Yes} & OAuth2 client secret; must match the Authorization Server. \\
+  \code{RSA\_PRIVATE\_KEY}         & ---  & \textbf{Yes} & PEM RSA private key with literal \code{\textbackslash n} separators. \\
+  \code{RSA\_PUBLIC\_KEY}          & ---  & \textbf{Yes} & PEM RSA public key with literal \code{\textbackslash n} separators. \\
+  \code{AUTH\_ISSUER\_URI}         & ---  & \textbf{Yes} & Externally reachable URL of the Authorization Server. Must be identical across all services. \\
+  \code{ECONOMY\_VERSION}          & ---  & \textbf{Yes} & GitHub Release tag of the economy plugin JAR to download on Minecraft container startup. \\
+  \bottomrule
+\end{tabularx}
+
+\note{See Appendix~\ref{app:shared-env} for variables that must be consistent across multiple services, particularly \code{AUTH\_ISSUER\_URI} and \code{MINECRAFT\_CLIENT\_SECRET}.}
+
+\section{Known Limitations}
+
+\begin{itemize}
+  \item Image tags in \code{docker-compose.yml} reference \code{latest}, making deployments non-deterministic and non-reproducible across environments.
+  \item No TLS termination or reverse proxy is configured; all services are exposed directly on host ports over plain HTTP.
+  \item No \code{generate-keys.sh} script exists despite being referenced in \code{env.example}. RSA keys must be generated manually.
+  \item No automated health verification or smoke test suite runs post-startup.
+\end{itemize}
+
+\section{Roadmap}
+
+\begin{itemize}
+  \item Pin all image tags to specific digest or version strings for reproducible deployments.
+  \item Add a \code{generate-keys.sh} script for RSA key pair generation and formatting.
+  \item Provide an example reverse proxy configuration with TLS termination (Nginx, Caddy, or Traefik).
+  \item Add automated post-startup smoke tests that verify all service health endpoints.
+\end{itemize}
