@@ -44,15 +44,19 @@
 % Hyperlinks and PDF metadata
 % -----------------------------------------------------------------------------
 \usepackage[
-  colorlinks  = true,
-  linkcolor   = CraftAccent,
-  urlcolor    = CraftAccent,
-  citecolor   = CraftAccent,
-  pdftitle    = {Craftalism — Software System Documentation},
-  pdfauthor   = {Henrique Michelini},
-  pdfsubject  = {Technical Documentation},
-  pdfkeywords = {Craftalism, Minecraft, Spring Boot, OAuth2, React}
+  colorlinks = true,
+  linkcolor  = CraftAccent,
+  urlcolor   = CraftAccent,
+  citecolor  = CraftAccent
 ]{hyperref}
+
+% Keep metadata in \hypersetup to avoid comma-splitting in package options.
+\hypersetup{
+  pdftitle   = {Craftalism — Software System Documentation},
+  pdfauthor  = {Henrique Michelini},
+  pdfsubject = {Technical Documentation},
+  pdfkeywords= {Craftalism, Minecraft, Spring Boot, OAuth2, React}
+}
 
 % -----------------------------------------------------------------------------
 % Headers and footers
@@ -82,43 +86,49 @@
 % -----------------------------------------------------------------------------
 % Chapter and section styling
 % -----------------------------------------------------------------------------
-\usepackage{titlesec}
+% titlesec is optional in minimal TeX installs; gracefully fall back to default
+% report class headings when unavailable.
+\IfFileExists{titlesec.sty}{
+  \usepackage{titlesec}
 
-% Chapter: large number + title on two lines with a colored rule
-\titleformat{\chapter}[display]
-  {\normalfont\bfseries\color{CraftBlue}}
-  {\large\textcolor{CraftAccent}{Module \thechapter}}
-  {0pt}
-  {\Huge}
-  [\vspace{2pt}{\color{CraftAccent}\titlerule[1.5pt]}]
+  % Chapter: large number + title on two lines with a colored rule
+  \titleformat{\chapter}[display]
+    {\normalfont\bfseries\color{CraftBlue}}
+    {\large\textcolor{CraftAccent}{Module \thechapter}}
+    {0pt}
+    {\Huge}
+    [\vspace{2pt}{\color{CraftAccent}\titlerule[1.5pt]}]
 
-\titlespacing*{\chapter}{0pt}{-20pt}{24pt}
+  \titlespacing*{\chapter}{0pt}{-20pt}{24pt}
 
-% Section: bold, colored
-\titleformat{\section}
-  {\normalfont\Large\bfseries\color{CraftBlue}}
-  {\thesection}
-  {0.75em}
-  {}
-  [\vspace{2pt}{\color{CraftBorder}\titlerule[0.5pt]}]
+  % Section: bold, colored
+  \titleformat{\section}
+    {\normalfont\Large\bfseries\color{CraftBlue}}
+    {\thesection}
+    {0.75em}
+    {}
+    [\vspace{2pt}{\color{CraftBorder}\titlerule[0.5pt]}]
 
-\titlespacing*{\section}{0pt}{18pt}{8pt}
+  \titlespacing*{\section}{0pt}{18pt}{8pt}
 
-% Subsection: medium, accent color
-\titleformat{\subsection}
-  {\normalfont\large\bfseries\color{CraftGray}}
-  {\thesubsection}
-  {0.75em}
-  {}
+  % Subsection: medium, accent color
+  \titleformat{\subsection}
+    {\normalfont\large\bfseries\color{CraftGray}}
+    {\thesubsection}
+    {0.75em}
+    {}
 
-\titlespacing*{\subsection}{0pt}{12pt}{4pt}
+  \titlespacing*{\subsection}{0pt}{12pt}{4pt}
 
-% Subsubsection: normal size, no number
-\titleformat{\subsubsection}
-  {\normalfont\normalsize\bfseries\color{CraftGray}}
-  {}
-  {0em}
-  {}
+  % Subsubsection: normal size, no number
+  \titleformat{\subsubsection}
+    {\normalfont\normalsize\bfseries\color{CraftGray}}
+    {}
+    {0em}
+    {}
+}{
+  \PackageWarningNoLine{craftalism-doc}{titlesec.sty not found; using default heading styles}
+}
 
 % -----------------------------------------------------------------------------
 % Paragraph spacing
@@ -292,28 +302,32 @@
 % -----------------------------------------------------------------------------
 % Table of contents styling
 % -----------------------------------------------------------------------------
-\usepackage{titletoc}
+\IfFileExists{titletoc.sty}{
+  \usepackage{titletoc}
 
-\titlecontents{chapter}
-  [0em]
-  {\vspace{6pt}\bfseries\color{CraftBlue}}
-  {\contentslabel{2em}}
-  {}
-  {\hfill\contentspage}
+  \titlecontents{chapter}
+    [0em]
+    {\vspace{6pt}\bfseries\color{CraftBlue}}
+    {\contentslabel{2em}}
+    {}
+    {\hfill\contentspage}
 
-\titlecontents{section}
-  [2em]
-  {\small}
-  {\contentslabel{2em}}
-  {}
-  {\titlerule*[6pt]{.}\contentspage}
+  \titlecontents{section}
+    [2em]
+    {\small}
+    {\contentslabel{2em}}
+    {}
+    {\titlerule*[6pt]{.}\contentspage}
 
-\titlecontents{subsection}
-  [4em]
-  {\small\color{CraftGray}}
-  {\contentslabel{2.5em}}
-  {}
-  {\titlerule*[6pt]{.}\contentspage}
+  \titlecontents{subsection}
+    [4em]
+    {\small\color{CraftGray}}
+    {\contentslabel{2.5em}}
+    {}
+    {\titlerule*[6pt]{.}\contentspage}
+}{
+  \PackageWarningNoLine{craftalism-doc}{titletoc.sty not found; using default table of contents formatting}
+}
 
 % -----------------------------------------------------------------------------
 % Miscellaneous utilities
