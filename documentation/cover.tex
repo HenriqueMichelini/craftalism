@@ -18,19 +18,18 @@
       ([yshift=-7.4cm] current page.north east);
   \end{tikzpicture}
 
-  \vspace*{1.5cm}
+  % Title block pinned to the blue banner area
+  \begin{tikzpicture}[remember picture, overlay]
+    \node[anchor=north, align=center, text=white, text width=0.9\paperwidth]
+      at ([yshift=-2.0cm]current page.north) {%
+        {\fontsize{11}{13}\selectfont\textls[80]{SOFTWARE SYSTEM DOCUMENTATION}\\[0.7em]}
+        {\fontsize{36}{42}\selectfont\bfseries Craftalism\\[0.45em]}
+        {\fontsize{13}{16}\selectfont\bfseries Modular Minecraft Economy Platform}
+      };
+  \end{tikzpicture}
 
-  % Title block (sits over the blue banner)
-  {%
-    \color{white}
-    \centering
-    \fontsize{11}{13}\selectfont\textls[80]{SOFTWARE SYSTEM DOCUMENTATION}\\[0.5em]
-    \fontsize{36}{42}\selectfont\bfseries Craftalism\\[0.3em]
-    \fontsize{13}{16}\selectfont\color{white!80!CraftBlue}
-    Modular Minecraft Economy Platform\\
-  }
-
-  \vspace{5.8cm}
+  % Push metadata block below the banner
+  \vspace*{8.4cm}
 
   % Metadata block
   \begin{center}

@@ -60,17 +60,17 @@ The platform is composed of five independent services, each in its own repositor
 % -----------------------------------------------------------------------------
 
 \rowcolors{2}{CraftLight}{white}
-\begin{tabularx}{\linewidth}{@{} L{3.4cm} L{5.0cm} X @{}}
+\begin{tabularx}{\linewidth}{@{} L{4.8cm} L{4.8cm} X @{}}
   \toprule
   {\tableheadstyle Repository} &
   {\tableheadstyle Primary Stack} &
   {\tableheadstyle Purpose} \\
   \midrule
-  \code{craftalism-api}                  & Java 17, Spring Boot 3.5, JPA   & Core REST API for players, balances, and transactions. \\
-  \code{craftalism-authorization-server} & Java 17, Spring Authorization Server & OAuth2/OIDC token issuer for internal services. \\
-  \code{craftalism-economy}              & Java 21, Paper API 1.21.4       & Minecraft plugin; delegates all economy state to the API. \\
-  \code{craftalism-dashboard}            & React 19, TypeScript 5, Vite 7  & Admin web UI for read-oriented data visibility. \\
-  \code{craftalism-deployment}           & Docker Compose, PostgreSQL 18   & Container orchestration for the full platform. \\
+  \texttt{craftalism-api}                  & Java 17, Spring Boot 3.5, JPA   & Core REST API for players, balances, and transactions. \\
+  \texttt{craftalism-authorization-server} & Java 17, Spring Authorization Server & OAuth2/OIDC token issuer for internal services. \\
+  \texttt{craftalism-economy}              & Java 21, Paper API 1.21.4       & Minecraft plugin; delegates all economy state to the API. \\
+  \texttt{craftalism-dashboard}            & React 19, TypeScript 5, Vite 7  & Admin web UI for read-oriented data visibility. \\
+  \texttt{craftalism-deployment}           & Docker Compose, PostgreSQL 18   & Container orchestration for the full platform. \\
   \bottomrule
 \end{tabularx}
 
@@ -84,5 +84,5 @@ The following conventions apply across all modules and are referenced throughout
   \item \textbf{Authentication:} The Minecraft plugin authenticates with short-lived JWT access tokens issued via the \code{client\_credentials} grant. The Craftalism API validates these tokens locally using the published JWKS.
   \item \textbf{Error responses:} The API returns RFC 9457 \code{ProblemDetail} payloads for all error conditions, with a consistent set of extension fields: \code{type}, \code{detail}, \code{status}, \code{timestamp}, \code{path}, and \code{errors}.
   \item \textbf{Scope enforcement:} Read operations require the \code{api:read} scope. Write operations require \code{api:write}.
-  \item \textbf{Containerization:} All services are distributed as Docker images and orchestrated with Docker Compose via the \code{craftalism-deployment} repository.
+  \item \textbf{Containerization:} All services are distributed as Docker images and orchestrated with Docker Compose via the \texttt{craftalism-deployment} repository.
 \end{itemize}

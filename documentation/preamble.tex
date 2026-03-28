@@ -13,7 +13,7 @@
   bottom=2.5cm,
   left=3.0cm,
   right=2.5cm,
-  headheight=14pt
+  headheight=22pt
 ]{geometry}
 
 % -----------------------------------------------------------------------------
@@ -21,6 +21,7 @@
 % -----------------------------------------------------------------------------
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
 \usepackage{lmodern}
 \usepackage{microtype}           % Improved text justification
 
@@ -144,17 +145,20 @@
 \usepackage{tabularx}
 \usepackage{array}
 \usepackage{longtable}           % Tables that span multiple pages
+\usepackage{ragged2e}
 
 % New column type: left-aligned, wrapping, with padding
-\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
-\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
-\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
+\newcolumntype{L}[1]{>{\RaggedRight\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\Centering\arraybackslash}p{#1}}
+\newcolumntype{R}[1]{>{\RaggedLeft\arraybackslash}p{#1}}
+\setlength{\tabcolsep}{3pt}
+\AtBeginEnvironment{tabularx}{\small}
 
 % Alternate row shading — use \rowcolors in table environments
 % Example: \rowcolors{2}{CraftLight}{white}
 
 % Shared table style macro
-\newcommand{\tableheadstyle}{\rowcolor{CraftBlue}\color{white}\bfseries}
+\newcommand{\tableheadstyle}{\bfseries\color{CraftBlue}}
 
 % -----------------------------------------------------------------------------
 % Code listings
@@ -336,7 +340,7 @@
 \usepackage{amsmath}             % Math (rarely needed, but safe to include)
 
 % Version macro — update in main.tex
-\newcommand{\docversion}{1.0}
+\providecommand{\docversion}{1.0}
 
 % Module badge macro — prints colored label before chapter title description
 \newcommand{\modulelang}[1]{%
