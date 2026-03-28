@@ -119,6 +119,7 @@ On \code{PlayerJoinEvent}, the plugin calls \code{GET /api/players/\{uuid\}}. If
   \item \code{BootContainer\#shutdown()} is a placeholder and performs no resource cleanup.
   \item \code{/setbalance} input validation accepts numeric digit strings only before scaling; decimal input is rejected inconsistently with other commands.
   \item No integration or end-to-end tests run against a live API instance.
+  \item The release workflow builds with \code{-x test}, so plugin releases are currently published without automated test execution.
 \end{itemize}
 
 \section{Roadmap}
@@ -128,4 +129,5 @@ On \code{PlayerJoinEvent}, the plugin calls \code{GET /api/players/\{uuid\}}. If
   \item Implement \code{BootContainer\#shutdown()} to release HTTP client and cache resources cleanly.
   \item Fix \code{/setbalance} input validation to accept decimal amounts consistently with \code{/pay}.
   \item Add integration tests against a live Craftalism API instance.
+  \item Update the release workflow to execute the test suite before packaging and publishing artifacts.
 \end{itemize}
