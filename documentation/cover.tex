@@ -1,55 +1,55 @@
 % =============================================================================
-% cover.tex — Craftalism Documentation Cover Page
+% cover.tex \u2014 Craftalism Documentation Cover Page
 % =============================================================================
 
 \begin{titlepage}
-
-  % Full-page colored banner at top
-  \begin{tikzpicture}[remember picture, overlay]
-    \fill[CraftBlue]
-      (current page.north west)
-      rectangle
-      ([yshift=-7cm] current page.north east);
-
-    % Horizontal accent stripe
-    \fill[CraftAccent]
-      ([yshift=-7cm] current page.north west)
-      rectangle
-      ([yshift=-7.4cm] current page.north east);
-  \end{tikzpicture}
-
-  \vspace*{0.8cm}
-
-  % Title block (kept fully inside the blue banner)
-  \begin{center}
-    \begin{minipage}[t][5.8cm][c]{0.92\textwidth}
-      \centering
-      {\color{white}\fontsize{11}{13}\selectfont\textls[80]{SOFTWARE SYSTEM DOCUMENTATION}\\[0.7em]}
-      {\color{white}\fontsize{36}{42}\selectfont\bfseries Craftalism\\[0.45em]}
-      {\color{white}\fontsize{13}{16}\selectfont\bfseries Modular Minecraft Economy Platform\\}
-    \end{minipage}
-  \end{center}
-
-  \vspace{1.8cm}
-
-  % Metadata block
-  \begin{center}
-    \begin{tabular}{@{}ll@{}}
-      \textcolor{CraftGray}{\small Author}    & \textbf{Henrique Michelini} \\[4pt]
-      \textcolor{CraftGray}{\small Version}   & \textbf{\docversion} \\[4pt]
-      \textcolor{CraftGray}{\small Date}      & \textbf{\DTMtoday} \\[4pt]
-      \textcolor{CraftGray}{\small License}   & \textbf{MIT} \\
-    \end{tabular}
-  \end{center}
-
-  \vfill
-
-  % Bottom rule and repository reference
-  {\color{CraftBorder}\rule{\linewidth}{0.4pt}}
-  \vspace{6pt}
-
-  \begin{center}
-    \small\textcolor{CraftGray}{\texttt{github.com/HenriqueMichelini}}
-  \end{center}
-
+	
+	% Full-page colored banner at top
+	\begin{tikzpicture}[remember picture, overlay]
+		\fill[CraftBlue]
+		(current page.north west)
+		rectangle
+		([yshift=-7cm] current page.north east);
+		
+		% Horizontal accent stripe
+		\fill[CraftAccent]
+		([yshift=-7cm] current page.north west)
+		rectangle
+		([yshift=-7.4cm] current page.north east);
+		
+		% --- Title block placed exactly inside the banner ---
+		\node[anchor=north, inner sep=0pt, xshift=0cm, yshift=-2.2cm] 
+		at (current page.north) 
+		{%
+			\begin{minipage}{0.92\textwidth}
+				\centering
+				{\color{white}\fontsize{11}{13}\selectfont\textls[80]{SOFTWARE SYSTEM DOCUMENTATION}\\[0.7em]}
+				{\color{white}\fontsize{36}{42}\selectfont\bfseries Craftalism\\[0.45em]}
+				{\color{white}\fontsize{13}{16}\selectfont\bfseries Modular Minecraft Economy Platform\\}
+			\end{minipage}%
+		};
+	\end{tikzpicture}
+	
+	% Metadata block (unchanged)
+	  % Metadata block (centered vertically between banner and footer)
+	\vspace*{7cm}      % reserve space for the banner
+	\vfill
+	\begin{center}
+		\begin{tabular}{@{}ll@{}}
+			\textcolor{CraftGray}{\small Author}    & \textbf{Henrique Michelini} \\[4pt]
+			\textcolor{CraftGray}{\small Version}   & \textbf{\docversion} \\[4pt]
+			\textcolor{CraftGray}{\small Date}      & \textbf{\DTMtoday} \\[4pt]
+			\textcolor{CraftGray}{\small License}   & \textbf{MIT} \\
+		\end{tabular}
+	\end{center}
+	\vfill
+	
+	% Bottom rule and repository reference
+	{\color{CraftBorder}\rule{\linewidth}{0.4pt}}
+	\vspace{6pt}
+	
+	\begin{center}
+		\small\textcolor{CraftGray}{\texttt{github.com/HenriqueMichelini}}
+	\end{center}
+	
 \end{titlepage}
