@@ -1,7 +1,6 @@
 documentation/*.synctex.gz
 documentation/*.aux
 documentation/*.log
-documentation/*.pdf
 documentation/*.toc
 documentation/*.out
 
