@@ -145,11 +145,14 @@
 \usepackage{tabularx}
 \usepackage{array}
 \usepackage{longtable}           % Tables that span multiple pages
+\usepackage{ragged2e}
 
 % New column type: left-aligned, wrapping, with padding
-\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
-\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
-\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
+\newcolumntype{L}[1]{>{\RaggedRight\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\Centering\arraybackslash}p{#1}}
+\newcolumntype{R}[1]{>{\RaggedLeft\arraybackslash}p{#1}}
+\setlength{\tabcolsep}{3pt}
+\AtBeginEnvironment{tabularx}{\small}
 
 % Alternate row shading — use \rowcolors in table environments
 % Example: \rowcolors{2}{CraftLight}{white}
