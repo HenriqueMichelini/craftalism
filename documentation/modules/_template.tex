@@ -1,0 +1,182 @@
+% =============================================================================
+% modules/_template.tex — Reusable module documentation template
+%
+% INSTRUCTIONS:
+%   1. Copy this file to modules/[module_name].tex
+%   2. Replace every TODO with real content
+%   3. Add \include{modules/[module_name]} to main.tex
+%   4. Run through the review checklist in LATEX_DOC_STANDARD.md
+%
+% DO NOT modify the section structure or ordering.
+% DO NOT remove any section, even if content is minimal.
+% =============================================================================
+
+% Language badge — e.g., Java 17 · Spring Boot, or TypeScript · React
+\modulelang{TODO: Language · Framework}
+
+\chapter{TODO: Module Display Name}
+\label{ch:TODO-module-id}
+
+% Brief subtitle shown below the chapter rule (optional — remove if not needed)
+\textcolor{CraftGray}{\textit{TODO: One-line role in the system (e.g., "Core REST API — players, balances, transactions")}}
+
+\bigskip
+
+% =============================================================================
+\section{Overview}
+% =============================================================================
+%
+% GUIDELINES:
+%   - 2–4 sentences only.
+%   - Answer: what is this module, where does it sit, who consumes it?
+%   - Do NOT list features here. Features belong in Responsibilities.
+%
+TODO: Describe what the module is and where it fits in the Craftalism system.
+Identify its primary consumers (other services, administrators, game players).
+Do not list features or implementation details.
+
+% =============================================================================
+\section{Responsibilities}
+% =============================================================================
+%
+% GUIDELINES:
+%   - Bullet list of concrete, operational behaviors.
+%   - Each bullet starts with a verb (Validates, Issues, Caches, Exposes…).
+%   - One sentence per bullet.
+%   - This is NOT a feature list — describe what the module does operationally.
+%
+\begin{itemize}
+  \item TODO: Verb + concrete behavior (e.g., "Validates incoming JWTs against the published JWKS.").
+  \item TODO: ...
+  \item TODO: ...
+  \item TODO: ...
+\end{itemize}
+
+% =============================================================================
+\section{Architecture and Design}
+% =============================================================================
+%
+% GUIDELINES:
+%   - Describe the internal structure and interaction with other services.
+%   - Must include: layer/component descriptions, request or data flow,
+%     and any non-obvious design decisions.
+%   - Use \subsection for distinct sub-topics (layers, security model, etc.).
+%   - Include a diagram if the structure benefits from visual representation.
+%
+TODO: Introductory paragraph describing the high-level design approach
+(e.g., layered architecture, event-driven, stateless resource server, etc.).
+
+\subsection{TODO: Layer or Component Name}
+
+TODO: Description of this layer/component and its responsibility.
+
+\subsection{TODO: Request or Data Flow}
+
+TODO: Step-by-step description of the primary request path through this module.
+Use an \texttt{enumerate} list for sequential steps.
+
+\begin{enumerate}
+  \item TODO: Step 1.
+  \item TODO: Step 2.
+  \item TODO: Step 3.
+\end{enumerate}
+
+% Optional: architecture diagram
+% Uncomment and adapt the tikzpicture below, or use \includegraphics.
+%
+% \begin{figure}[h]
+% \centering
+% \begin{tikzpicture}[node distance=1.4cm and 2.0cm]
+%   \node[service]  (a) {Component A};
+%   \node[service, right=of a] (b) {Component B};
+%   \draw[flow] (a) -- node[flowlabel, above]{action} (b);
+% \end{tikzpicture}
+% \caption{TODO: Figure caption}
+% \label{fig:TODO-diagram-id}
+% \end{figure}
+
+% Optional: code example
+% \begin{bashlist}[caption={TODO: Caption}]
+% TODO: command or code snippet
+% \end{bashlist}
+
+% =============================================================================
+\section{Tech Stack}
+% =============================================================================
+%
+% GUIDELINES:
+%   - Three columns: Category | Technology | Notes.
+%   - Notes can be blank but the column must remain.
+%   - Do not abbreviate technology names (write "Spring Boot 3.5", not "SB 3.5").
+%
+\rowcolors{2}{CraftLight}{white}
+\begin{tabularx}{\linewidth}{@{} L{3.0cm} L{5.2cm} X @{}}
+  \toprule
+  {\tableheadstyle Category} &
+  {\tableheadstyle Technology} &
+  {\tableheadstyle Notes} \\
+  \midrule
+  Language    & TODO: e.g., Java 17      & TODO: or leave blank \\
+  Framework   & TODO: e.g., Spring Boot 3.5 & \\
+  Database    & TODO: e.g., PostgreSQL 18 & \\
+  Build Tool  & TODO: e.g., Gradle Wrapper & \\
+  Testing     & TODO: e.g., JUnit 5, Mockito & \\
+  Packaging   & TODO: e.g., Docker multi-stage image & \\
+  \bottomrule
+\end{tabularx}
+
+% =============================================================================
+\section{Configuration}
+% =============================================================================
+%
+% GUIDELINES:
+%   - Four columns: Variable | Default | Required | Description.
+%   - Mark required variables with \textbf{Yes}.
+%   - Use em dash (---) for variables with no default.
+%   - If the module has no configuration, replace the table with:
+%     "This module has no external configuration."
+%
+\rowcolors{2}{CraftLight}{white}
+\begin{tabularx}{\linewidth}{@{} L{4.2cm} L{2.0cm} C{1.6cm} X @{}}
+  \toprule
+  {\tableheadstyle Variable} &
+  {\tableheadstyle Default} &
+  {\tableheadstyle Required} &
+  {\tableheadstyle Description} \\
+  \midrule
+  \code{TODO\_VAR\_NAME}  & ---                & \textbf{Yes} & TODO: Description. \\
+  \code{TODO\_VAR\_NAME}  & \code{TODO\_value} & No           & TODO: Description. \\
+  \bottomrule
+\end{tabularx}
+
+% =============================================================================
+\section{Known Limitations}
+% =============================================================================
+%
+% GUIDELINES:
+%   - Each item describes one specific gap, bug, or incomplete feature
+%     in the CURRENT codebase. Write in present tense.
+%   - Do NOT include planned improvements here — those go in Roadmap.
+%   - If there are no known limitations, write "None at this time."
+%
+\begin{itemize}
+  \item TODO: Present-tense statement of a current limitation
+        (e.g., "Transaction creation does not update balances atomically.").
+  \item TODO: ...
+\end{itemize}
+
+% =============================================================================
+\section{Roadmap}
+% =============================================================================
+%
+% GUIDELINES:
+%   - Action-oriented planned improvements ("Add...", "Integrate...", "Replace...").
+%   - Do NOT duplicate Known Limitations — the roadmap is the intended solution,
+%     not a restatement of the problem.
+%   - If there are no planned improvements, write "No roadmap items at this time."
+%
+\begin{itemize}
+  \item TODO: Action-oriented improvement
+        (e.g., "Integrate transaction creation with atomic balance transfer.").
+  \item TODO: ...
+\end{itemize}

@@ -1,36 +1,128 @@
-\documentclass[a4paper,12pt]{article}
+% =============================================================================
+% main.tex — Craftalism Software System Documentation
+%
+% Compiler: pdflatex (run twice for correct TOC and cross-references)
+%   pdflatex main.tex && pdflatex main.tex
+%
+% Or with latexmk (recommended):
+%   latexmk -pdf main.tex
+%
+% To add a new module:
+%   1. Copy modules/_template.tex → modules/[name].tex
+%   2. Fill in all TODO placeholders
+%   3. Add \include{modules/[name]} in the Modules section below
+%   4. Recompile
+% =============================================================================
 
-\usepackage[T1]{fontenc}
-\usepackage[english]{babel}
-\usepackage{graphicx}
-\usepackage{amsmath}
-\usepackage{float}
-\usepackage{geometry}
-\geometry{margin=2cm}
-\usepackage{hyperref}
+\documentclass[11pt, a4paper, twoside]{report}
 
-\hypersetup{
-	colorlinks=true,
-	linkcolor=black,
-	urlcolor=blue
-}
+% Project-wide version — update here only
+\newcommand{\docversion}{1.0}
 
+% Load shared styling, packages, macros, and TikZ styles
+\input{preamble}
+
+% =============================================================================
 \begin{document}
-	
-	\pagenumbering{gobble}
-	\input{cover}
-	\newpage
-	
-	\pagenumbering{arabic}
-	\tableofcontents
-	\newpage
-	
-	\input{sections/01-introduction}
-	
-	\newpage \input{sections/02-project-overview}
-	
-	\newpage \input{sections/03-ecosystem-architecture}
-	
-	\newpage \input{sections/04-technology-stack-overview}
-		
+% =============================================================================
+
+% ---- Front matter -----------------------------------------------------------
+
+\pagenumbering{roman}
+
+\input{cover}
+
+% Table of contents
+\tableofcontents
+\clearpage
+
+% ---- Main matter ------------------------------------------------------------
+
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+% Project-level introduction (not a numbered chapter)
+\input{introduction}
+\clearpage
+
+% ---- Modules ----------------------------------------------------------------
+% Add or remove \include lines here as modules are added to the project.
+% Each module is one chapter. Order here determines order in the document.
+
+\include{modules/api}
+\include{modules/authorization_server}
+\include{modules/economy}
+\include{modules/dashboard}
+\include{modules/deployment}
+
+% ---- Appendices -------------------------------------------------------------
+
+\appendix
+
+% Appendix A — Shared environment variables
+% Add variables that span multiple modules (e.g., AUTH_ISSUER_URI)
+\chapter{Shared Environment Variables}
+\label{app:shared-env}
+
+The following environment variables are referenced by more than one module.
+Each module's Configuration section documents the full set of variables for that module;
+this appendix highlights variables whose values must be consistent across services.
+
+\rowcolors{2}{CraftLight}{white}
+\begin{tabularx}{\linewidth}{@{} L{4.8cm} X @{}}
+  \toprule
+  {\tableheadstyle Variable} & {\tableheadstyle Consistency requirement} \\
+  \midrule
+  \code{AUTH\_ISSUER\_URI} &
+    Must be set to the same value in the Craftalism API, the Authorization Server,
+    and the Minecraft plugin. A mismatch causes JWT validation failures
+    because the \code{iss} claim in issued tokens will not match what the API expects. \\
+  \code{MINECRAFT\_CLIENT\_SECRET} &
+    Must match between the Authorization Server (where the client is seeded)
+    and the Minecraft plugin (where it is used to request tokens). \\
+  \code{RSA\_PRIVATE\_KEY} / \code{RSA\_PUBLIC\_KEY} &
+    Must remain stable across Authorization Server restarts.
+    Rotating these keys invalidates all previously issued tokens. \\
+  \bottomrule
+\end{tabularx}
+
+% Appendix B — Quick-start command reference
+\chapter{Quick-Start Command Reference}
+\label{app:quickstart}
+
+\subsection*{Start the full platform}
+\begin{bashlist}
+cd craftalism-deployment
+cp env.example .env
+# Edit .env with required secrets
+docker compose pull
+docker compose up -d
+\end{bashlist}
+
+\subsection*{Health checks}
+\begin{bashlist}
+curl -f http://localhost:3000/actuator/health   # Craftalism API
+curl -f http://localhost:9000/actuator/health   # Authorization Server
+curl -I  http://localhost:8080/                 # Dashboard
+\end{bashlist}
+
+\subsection*{Run a module's tests}
+\begin{bashlist}
+# Java modules (API, Authorization Server)
+cd [module]/java && ./gradlew test
+
+# Minecraft plugin
+cd craftalism-economy/java && ./gradlew test
+\end{bashlist}
+
+\subsection*{Request a token manually}
+\begin{bashlist}
+curl -X POST 'http://localhost:9000/oauth2/token' \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -u "minecraft-server:${MINECRAFT_CLIENT_SECRET}" \
+  -d 'grant_type=client_credentials&scope=api:read api:write'
+\end{bashlist}
+
+% ---- End of document --------------------------------------------------------
+
 \end{document}

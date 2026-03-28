@@ -1,0 +1,131 @@
+% =============================================================================
+% modules/economy.tex — Craftalism Economy Plugin
+% =============================================================================
+
+\modulelang{Java 21 · Paper API 1.21.4 · Caffeine}
+
+\chapter{Craftalism Economy}
+\label{ch:economy}
+
+\textcolor{CraftGray}{\textit{Minecraft plugin — in-game economy commands backed by the Craftalism API}}
+
+\bigskip
+
+\section{Overview}
+
+The Economy plugin runs inside the Minecraft server and serves as the player-facing interface to the Craftalism economy. Rather than maintaining balance state locally, it acts as an authenticated HTTP client to the Craftalism API. All command handling is fully asynchronous, ensuring the main server thread is never blocked by network calls. An in-process Caffeine cache reduces redundant API requests for player and balance lookups.
+
+\section{Responsibilities}
+
+\begin{itemize}
+  \item Exposes in-game economy commands: \code{/pay}, \code{/balance}, \code{/setbalance}, and \code{/baltop}.
+  \item Executes all API calls asynchronously using \code{CompletableFuture} to avoid blocking the main server thread.
+  \item Authenticates with the Authorization Server using \code{client\_credentials} and caches the resulting JWT.
+  \item Caches player and balance records locally using Caffeine to minimize round-trip latency.
+  \item Implements compensating rollback for \code{/pay}: if a deposit to the receiver fails after a successful withdrawal from the sender, the plugin attempts to reverse the withdrawal.
+  \item Provisions new players and balance records automatically on player join if they do not yet exist in the API.
+  \item Formats currency amounts according to configurable locale, symbol, and fallback rules.
+\end{itemize}
+
+\section{Architecture and Design}
+
+The codebase uses a strict four-layer architecture. Dependencies point inward; no outer layer is visible to an inner one.
+
+\subsection{Layer Descriptions}
+
+\textbf{Presentation layer} (\code{presentation/}): Bukkit command executors and event listeners. Validates input, delegates to application services, and maps result status codes to player-facing messages sourced from \code{logs.yml}.
+
+\textbf{Application layer} (\code{application/}): Use-case orchestration. Each service coordinates domain rules and infrastructure calls, returning typed result DTOs. No raw exceptions propagate to the presentation layer.
+
+\textbf{Domain layer} (\code{domain/}): Core models (\code{Player}, \code{Balance}, \code{Transaction}) and business rules (\code{FundsTransfer}, \code{AmountCheck}, \code{CurrencyFormatter}, \code{CurrencyParser}). No framework dependencies.
+
+\textbf{Infrastructure layer} (\code{infra/}): HTTP client, OAuth2 token service, API service classes, Caffeine cache repositories, config loading, and the plugin bootstrap container.
+
+\subsection{The \texttt{/pay} Transfer Flow}
+
+\begin{enumerate}
+  \item Validate sender permissions and command arguments.
+  \item Resolve sender from cache or API; resolve receiver by name from the API.
+  \item Validate amount (positive, non-zero) and reject self-payment.
+  \item Withdraw from sender via \code{POST /api/balances/\{uuid\}/withdraw}.
+  \item Deposit to receiver via \code{POST /api/balances/\{uuid\}/deposit}.
+  \item If deposit fails: attempt compensating deposit back to sender (best effort).
+  \item Write transaction record via \code{POST /api/transactions} (best effort — failure does not revert a completed transfer).
+  \item Map final result status to player-facing message.
+\end{enumerate}
+
+\subsection{Player Join Provisioning}
+
+On \code{PlayerJoinEvent}, the plugin calls \code{GET /api/players/\{uuid\}}. If the player does not exist, it calls \code{POST /api/players} to register them and then \code{POST /api/balances} to create a default balance. Both the player and balance records are then stored in the Caffeine cache.
+
+\section{Tech Stack}
+
+\rowcolors{2}{CraftLight}{white}
+\begin{tabularx}{\linewidth}{@{} L{3.0cm} L{5.2cm} X @{}}
+  \toprule
+  {\tableheadstyle Category} &
+  {\tableheadstyle Technology} &
+  {\tableheadstyle Notes} \\
+  \midrule
+  Language      & Java 21                           & \\
+  Minecraft API & Paper API 1.21.4-R0.1-SNAPSHOT    & Paper-compatible servers only \\
+  HTTP Client   & Java \code{HttpClient}            & Built-in; no additional dependency \\
+  Cache         & Caffeine                          & In-process player and balance cache \\
+  Serialization & Gson                              & JSON parsing for API responses \\
+  Build Tool    & Gradle Wrapper                    & \\
+  Testing       & JUnit 5, Mockito, MockBukkit      & \\
+  \bottomrule
+\end{tabularx}
+
+\section{Configuration}
+
+\textbf{\code{config.yml}} — bundled in JAR, written to plugin data folder on first run.
+
+\rowcolors{2}{CraftLight}{white}
+\begin{tabularx}{\linewidth}{@{} L{4.2cm} L{2.6cm} C{1.6cm} X @{}}
+  \toprule
+  {\tableheadstyle Key} & {\tableheadstyle Default} & {\tableheadstyle Required} & {\tableheadstyle Description} \\
+  \midrule
+  \code{default-balance}       & \code{100000000} & No & Initial balance (internal scaled integer). \\
+  \code{locale}                & \code{en-US}     & No & Locale for currency formatting. \\
+  \code{currency-symbol}       & \code{\$}        & No & Symbol prepended to formatted amounts. \\
+  \code{null-representation}   & ---              & No & String shown when a value cannot be formatted. \\
+  \bottomrule
+\end{tabularx}
+
+\vspace{6pt}
+
+\textbf{Environment variable overrides} (\code{connection-config.yml} values):
+
+\rowcolors{2}{CraftLight}{white}
+\begin{tabularx}{\linewidth}{@{} L{5.0cm} X @{}}
+  \toprule
+  {\tableheadstyle Variable} & {\tableheadstyle Overrides} \\
+  \midrule
+  \code{CRAFTALISM\_API\_URL}       & API base URL. \\
+  \code{AUTH\_ISSUER\_URI}          & OAuth2 issuer URI. \\
+  \code{AUTH\_TOKEN\_PATH}          & Token endpoint path. \\
+  \code{MINECRAFT\_CLIENT\_ID}      & OAuth2 client ID. \\
+  \code{MINECRAFT\_CLIENT\_SECRET}  & OAuth2 client secret. Prefer this over hardcoding in YAML. \\
+  \code{CRAFTALISM\_API\_KEY}       & Fallback for \code{MINECRAFT\_CLIENT\_SECRET}. \\
+  \code{MINECRAFT\_CLIENT\_SCOPES}  & Requested OAuth2 scopes (space-separated). \\
+  \bottomrule
+\end{tabularx}
+
+\section{Known Limitations}
+
+\begin{itemize}
+  \item The \code{OnQuit} listener class exists but is not registered in \code{EventRegistrar}. Player disconnect events are not handled and the cache is never evicted on logout.
+  \item \code{BootContainer\#shutdown()} is a placeholder and performs no resource cleanup.
+  \item \code{/setbalance} input validation accepts numeric digit strings only before scaling; decimal input is rejected inconsistently with other commands.
+  \item No integration or end-to-end tests run against a live API instance.
+\end{itemize}
+
+\section{Roadmap}
+
+\begin{itemize}
+  \item Register \code{OnQuit} in \code{EventRegistrar} and implement cache eviction on player disconnect.
+  \item Implement \code{BootContainer\#shutdown()} to release HTTP client and cache resources cleanly.
+  \item Fix \code{/setbalance} input validation to accept decimal amounts consistently with \code{/pay}.
+  \item Add integration tests against a live Craftalism API instance.
+\end{itemize}
