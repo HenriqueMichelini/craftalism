@@ -87,6 +87,7 @@ In Docker, \code{docker-entrypoint.sh} generates \code{/runtime-config.js} befor
   \item ``Add Player'' and ``Add Balance'' action buttons are UI placeholders; no create flows are implemented or wired to the API.
   \item Sidebar navigation items are presentational only; routing between sections is not implemented.
   \item No automated tests exist for the API client, hooks, or table components.
+  \item The repository workflow builds and publishes Docker images on tags but does not run linting or type checking before publication.
 \end{itemize}
 
 \section{Roadmap}
@@ -96,5 +97,5 @@ In Docker, \code{docker-entrypoint.sh} generates \code{/runtime-config.js} befor
   \item Implement React Router and route-driven navigation for all dashboard sections.
   \item Build create, update, and delete flows for players, balances, and transactions.
   \item Add unit and integration tests for the API client, hooks, and table rendering.
-  \item Add a CI pipeline with lint, typecheck, build, and test stages.
+  \item Extend the GitHub Actions workflow to run linting and type checking before publishing images.
 \end{itemize}

@@ -120,8 +120,9 @@ RSA keys are loaded from environment variables (\code{RSA\_PRIVATE\_KEY} / \code
 \begin{itemize}
   \item No \code{generate-keys.sh} script exists in this repository, despite being referenced in documentation and the deployment repository. RSA key pairs must be generated manually.
   \item Integration tests run against H2 in PostgreSQL compatibility mode, not real PostgreSQL. Schema differences may produce false passes.
+  \item \code{SecurityConfig} includes public matchers for \code{/api/**} paths that do not belong to this service and appear to be leftover rules, increasing configuration noise and maintenance risk.
   \item Token introspection and revocation endpoints have no documented usage examples.
-  \item No CI pipeline is configured.
+  \item The repository workflow builds and pushes images on tags but does not run automated tests before publication.
 \end{itemize}
 
 % =============================================================================
@@ -131,6 +132,7 @@ RSA keys are loaded from environment variables (\code{RSA\_PRIVATE\_KEY} / \code
 \begin{itemize}
   \item Add a \code{generate-keys.sh} utility script for RSA key pair generation and formatting.
   \item Add containerized integration tests that run against real PostgreSQL.
+  \item Remove non-auth API path matchers from \code{SecurityConfig} and simplify the fallback chain to auth-server endpoints only.
   \item Document introspection and revocation usage with curl examples.
-  \item Configure a CI pipeline with build and test stages.
+  \item Extend the GitHub Actions workflow to run tests before publishing images.
 \end{itemize}

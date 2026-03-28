@@ -169,7 +169,8 @@ All errors are returned as RFC 9457 \code{ProblemDetail} with the following exte
   \item \code{POST /api/transactions} does not atomically update balances. The ledger and balance state can diverge if the system fails between a balance operation and the subsequent transaction record write.
   \item List endpoints return all records in a single response with no pagination or filtering support. This will degrade under large datasets.
   \item Integration tests run against H2 in-memory, not a real PostgreSQL instance. Schema and query compatibility gaps may exist.
-  \item No CI pipeline is configured.
+  \item CORS allowed origins are hard-coded in \code{SecurityConfig} (localhost ports only), so non-local Dashboard or operator UIs require code changes and rebuilds.
+  \item The repository workflow publishes Docker images on version tags but does not execute automated tests before image publication.
 \end{itemize}
 
 % =============================================================================
@@ -180,5 +181,6 @@ All errors are returned as RFC 9457 \code{ProblemDetail} with the following exte
   \item Integrate \code{POST /api/transactions} with \code{BalanceService.transfer()} so ledger and balance updates occur atomically within a single database transaction.
   \item Add cursor-based or offset pagination and server-side filtering to all list endpoints.
   \item Add integration tests against real PostgreSQL with actual JWT-bearing requests.
-  \item Configure a CI pipeline with lint, typecheck, build, and test stages.
+  \item Externalize allowed origins into environment variables or profile-specific properties.
+  \item Extend the GitHub Actions workflow to run tests before publishing images.
 \end{itemize}
