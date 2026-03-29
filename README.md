@@ -33,17 +33,17 @@ Craftalism is organized as five independent repositories. Each service has a def
 
 ```
                      ┌──────────────────────────────────────────┐
-                     │            Craftalism Platform            │
+                     │            Craftalism Platform           │
                      │                                          │
-  Browser ─────────▶│  Dashboard (:8080)                       │
+  Browser ─────────▶ │  Dashboard (:8080)                       │
                      │       │ /api/* (reverse proxy)           │
                      │       ▼                                  │
-  Plugin  ─────────▶│  API (:3000)  ◀──── JWT validation ────  │
-  (Minecraft)        │       │              via JWKS             │
+  Plugin  ─────────▶ │  API (:3000)  ◀──── JWT validation ────  │
+  (Minecraft)        │       │              via JWKS            │
                      │       ▼                                  │
                      │  PostgreSQL (internal)                   │
                      │                                          │
-  Plugin  ─────────▶│  Authorization Server (:9000)            │
+  Plugin  ─────────▶ │  Authorization Server (:9000)            │
   (OAuth2 token req) │  Issues RSA-signed JWTs                  │
                      └──────────────────────────────────────────┘
 ```
