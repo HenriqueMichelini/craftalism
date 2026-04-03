@@ -33,17 +33,17 @@ Craftalism is organized as five independent repositories. Each service has a def
 
 ```
                      ┌──────────────────────────────────────────┐
-                     │            Craftalism Platform           │
+                     │            Craftalism Platform            │
                      │                                          │
-  Browser ─────────▶ │  Dashboard (:8080)                       │
+  Browser ─────────▶│  Dashboard (:8080)                       │
                      │       │ /api/* (reverse proxy)           │
                      │       ▼                                  │
-  Plugin  ─────────▶ │  API (:3000)  ◀──── JWT validation ────  │
-  (Minecraft)        │       │              via JWKS            │
+  Plugin  ─────────▶│  API (:3000)  ◀──── JWT validation ────  │
+  (Minecraft)        │       │              via JWKS             │
                      │       ▼                                  │
                      │  PostgreSQL (internal)                   │
                      │                                          │
-  Plugin  ─────────▶ │  Authorization Server (:9000)            │
+  Plugin  ─────────▶│  Authorization Server (:9000)            │
   (OAuth2 token req) │  Issues RSA-signed JWTs                  │
                      └──────────────────────────────────────────┘
 ```
@@ -127,8 +127,19 @@ Generate a random secret with `openssl rand -base64 32`. For RSA key generation 
 **4. Start the stack.**
 
 ```bash
-docker compose pull
-docker compose up -d
+./prod
+```
+
+This command automatically refreshes pinned image digests into `.env`, pre-pulls production images, and starts the production stack. To skip the digest refresh step:
+
+```bash
+SKIP_DIGEST_REFRESH=1 ./prod
+```
+
+To stop the stack:
+
+```bash
+./prod down
 ```
 
 **5. Verify all services are healthy.**
@@ -193,7 +204,6 @@ All error responses conform to RFC 9457 `ProblemDetail`. Full interactive docume
 - `POST /api/transactions` does not atomically update balances. The ledger and balance state can diverge if the plugin fails between the withdrawal and the transaction record write.
 - The dashboard has no authentication layer — anyone who can reach port 8080 can view economy data.
 - Dashboard action buttons (Add Player, Add Balance) are UI placeholders; no create flows are implemented.
-- Image tags in `docker-compose.yml` use `latest`, making deployments non-reproducible across environments.
 - No CI pipeline is configured across any repository.
 - No end-to-end or integration tests run against a live stack.
 
@@ -205,7 +215,6 @@ All error responses conform to RFC 9457 `ProblemDetail`. Full interactive docume
 - Dashboard authentication and authorization.
 - Pagination, filtering, and sorting on all API list endpoints.
 - React Router and full CRUD flows in the dashboard.
-- Pinned image tags in Docker Compose for reproducible deployments.
 - CI pipeline (lint, typecheck, build, test) across all repositories.
 - End-to-end integration tests against a live stack.
 - Reverse proxy configuration with TLS termination.
