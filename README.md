@@ -187,13 +187,13 @@ The plugin obtains a JWT from the Authorization Server on startup using `client_
 
 ## API Overview
 
-The Craftalism API exposes three resource groups under `/api`. All `GET` endpoints require scope `api:read`; all write endpoints require `api:write`.
+The Craftalism API exposes three resource groups under `/api`. All `GET` endpoints are intentionally public for the dashboard MVP; all write endpoints require `api:write`.
 
 | Resource | Endpoints |
 |---|---|
 | Players | `GET /players`, `GET /players/{uuid}`, `GET /players/name/{name}`, `POST /players` |
 | Balances | `GET /balances`, `GET /balances/{uuid}`, `GET /balances/top`, `POST /balances`, `PUT /balances/{uuid}/set`, `POST /balances/{uuid}/deposit`, `POST /balances/{uuid}/withdraw` |
-| Transactions | `GET /transactions`, `GET /transactions/id/{id}`, `GET /transactions/from/{uuid}`, `GET /transactions/to/{uuid}`, `POST /transactions` |
+| Transactions | `GET /transactions`, `GET /transactions/{id} (legacy alias: /transactions/id/{id})`, `GET /transactions/from/{uuid}`, `GET /transactions/to/{uuid}`, `POST /transactions` |
 
 All error responses conform to RFC 9457 `ProblemDetail`. Full interactive documentation is available at `/api-docs` when the API is running.
 
@@ -201,7 +201,7 @@ All error responses conform to RFC 9457 `ProblemDetail`. Full interactive docume
 
 ## Known Limitations
 
-- `POST /api/transactions` does not atomically update balances. The ledger and balance state can diverge if the plugin fails between the withdrawal and the transaction record write.
+- Incident surfacing is backend-first: incidents are persisted, but there is no dashboard incident view yet.
 - The dashboard has no authentication layer — anyone who can reach port 8080 can view economy data.
 - Dashboard action buttons (Add Player, Add Balance) are UI placeholders; no create flows are implemented.
 - No CI pipeline is configured across any repository.
