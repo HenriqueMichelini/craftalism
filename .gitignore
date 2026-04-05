@@ -1,7 +1,5 @@
-documentation/*.synctex.gz
-documentation/*.aux
-documentation/*.log
-documentation/*.toc
-documentation/*.out
-
-
+docs/technical-documentation/*.synctex.gz
+docs/technical-documentation/*.aux
+docs/technical-documentation/*.log
+docs/technical-documentation/*.toc
+docs/technical-documentation/*.out
