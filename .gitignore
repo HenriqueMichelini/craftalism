@@ -3,3 +3,4 @@ docs/technical-documentation/*.aux
 docs/technical-documentation/*.log
 docs/technical-documentation/*.toc
 docs/technical-documentation/*.out
+docs/technical-documentation/modules/*.aux
