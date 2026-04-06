@@ -11,6 +11,13 @@
 
 ---
 
+## Status
+
+Current ecosystem status: **Release-ready**
+
+See governance audit:
+- docs/audit/2026-04-06-ecosystem-release-readiness.md
+
 ## Overview
 
 Craftalism connects a Minecraft game server to a purpose-built web backend. Instead of managing economy data inside the game server (the conventional approach), the platform delegates all balance and transaction state to a centralized REST API. The Minecraft plugin becomes a thin, authenticated client: it issues commands, calls the API asynchronously, and renders responses back to players.

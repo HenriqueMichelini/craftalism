@@ -50,7 +50,6 @@ This repository is the governance layer for the full system.
 | `idempotency` | `craftalism-api` | `craftalism-economy`, future write clients |
 | `incident-recording` | `craftalism-api` | `craftalism-economy`, future operational clients |
 | `auth-issuer` | split ownership: `craftalism-authorization-server` (issuance-side), `craftalism-api` (validation-side) | `craftalism-economy`, `craftalism-deployment`, future authenticated clients |
-| `security-access-control` | policy ownership in root governance docs; implementation ownership in the relevant service/client repos | all repositories |
 
 ---
 
@@ -106,14 +105,20 @@ For any repo-specific task, Codex should read in this order:
 
 1. `docs/governance-precedence.md`
 2. `docs/system-summary.md`
-3. `docs/audit/2026-04-04-ecosystem-technical-audit.md`
-4. `docs/contracts/...`
-5. `docs/standards/...`
+3. `docs/contracts/...`
+4. `docs/standards/...`
+5. `docs/audit/2026-04-04-ecosystem-technical-audit.md`
 6. repo-local `docs/repo-contract-map.md`
 7. repo-local `docs/repo-requirement-pack.md`
 
 Then it should:
 - identify owned vs consumed responsibilities
-- audit local compliance
+- resolve conflicts using governance precedence
+- audit local compliance first
 - only change what belongs to that repository
 - avoid redefining cross-repo contracts locally
+
+## Latest Ecosystem Status
+
+See:
+- 2026-04-06 Ecosystem Release Readiness
