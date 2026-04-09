@@ -13,10 +13,13 @@
 
 ## Status
 
-Current ecosystem status: **Release-ready**
+Current ecosystem status: **Repo-verified; production deployment requires configured HTTPS edge and dashboard access credentials**
 
 See governance audit:
 - docs/audit/2026-04-06-ecosystem-release-readiness.md
+
+Contributor workflow note:
+- [Codex usage checklist](docs/codex-usage-checklist.md)
 
 ## Overview
 
@@ -29,7 +32,7 @@ This separation enables the economy to be inspected, audited, and administered e
 - In-game economy commands (`/pay`, `/balance`, `/setbalance`, `/baltop`) backed by a persistent API rather than local storage.
 - Centralized player, balance, and transaction management via a typed REST API.
 - OAuth2 machine-to-machine authentication: all plugin-to-API traffic is token-gated.
-- Administrative dashboard for read-oriented visibility into players, balances, and transactions.
+- Administrative dashboard for read-oriented visibility into players, balances, and transactions, protected at the deployment edge.
 - Full containerized deployment: the entire platform starts with a single `docker compose up`.
 
 ---
@@ -42,16 +45,20 @@ Craftalism is organized as five independent repositories. Each service has a def
                      ┌──────────────────────────────────────────┐
                      │            Craftalism Platform            │
                      │                                          │
-  Browser ─────────▶│  Dashboard (:8080)                       │
+  Browser ─────────▶│  Edge (:80/:443, TLS + basic auth)       │
+                     │       │                                  │
+                     │       ▼                                  │
+                     │  Dashboard (internal)                    │
                      │       │ /api/* (reverse proxy)           │
                      │       ▼                                  │
-  Plugin  ─────────▶│  API (:3000)  ◀──── JWT validation ────  │
+  Plugin  ─────────▶│  API (internal) ◀──── JWT validation ──  │
   (Minecraft)        │       │              via JWKS             │
                      │       ▼                                  │
                      │  PostgreSQL (internal)                   │
                      │                                          │
-  Plugin  ─────────▶│  Authorization Server (:9000)            │
-  (OAuth2 token req) │  Issues RSA-signed JWTs                  │
+  Plugin  ─────────▶│  Authorization Server (internal,         │
+  (OAuth2 token req) │  published via edge auth hostname)      │
+                     │  Issues RSA-signed JWTs                  │
                      └──────────────────────────────────────────┘
 ```
 
@@ -60,7 +67,7 @@ Craftalism is organized as five independent repositories. Each service has a def
 1. On startup, the Minecraft plugin authenticates with the **Authorization Server** using `client_credentials` and caches the resulting JWT.
 2. All subsequent plugin requests to the **API** carry that JWT as a `Bearer` token.
 3. The API validates tokens locally by fetching the Authorization Server's public keys from `/oauth2/jwks` — no round-trip to the auth server per request.
-4. The **Dashboard** calls the same API through an Nginx reverse proxy; it reads data directly without an OAuth2 flow (dashboard authentication is a planned feature).
+4. The **Dashboard** calls the same API through an Nginx reverse proxy, while the deployment edge enforces HTTPS and dashboard access control.
 5. The **API** and **Authorization Server** both persist state to the shared **PostgreSQL** instance, in separate databases (`craftalism` and `authserver`).
 
 ---
@@ -152,19 +159,18 @@ To stop the stack:
 **5. Verify all services are healthy.**
 
 ```bash
-curl -f http://localhost:3000/actuator/health   # API
-curl -f http://localhost:9000/actuator/health   # Authorization Server
-curl -I  http://localhost:8080/                 # Dashboard
+curl -u "${DASHBOARD_BASIC_AUTH_USERNAME}:<dashboard-password>" -I "https://${DASHBOARD_SITE_ADDRESS}/"
+curl -f "https://${AUTH_SITE_ADDRESS}/actuator/health"
 ```
 
 ### Service endpoints
 
 | Service | URL |
 |---|---|
-| Dashboard | `http://localhost:8080` |
-| API | `http://localhost:3000` |
-| API docs (Swagger) | `http://localhost:3000/api-docs` |
-| Authorization Server | `http://localhost:9000` |
+| Dashboard | `https://${DASHBOARD_SITE_ADDRESS}` |
+| Authorization Server | `https://${AUTH_SITE_ADDRESS}` |
+| API | Internal-only in the production deployment |
+| API docs (Swagger) | Internal-only in the production deployment |
 | Minecraft | `localhost:25565` |
 
 ---
@@ -177,14 +183,16 @@ When a player connects to the Minecraft server, the plugin ensures they exist in
 
 ### `/pay` transfer
 
-The `/pay` command demonstrates the platform's error-handling design. The plugin does not perform a single atomic transfer; instead it orchestrates two sequential API calls with explicit rollback logic:
+The canonical `/pay` flow is an atomic API transfer. The plugin should call `POST /api/balances/transfer` with an idempotency key and treat that endpoint as the source of truth for balance movement and transaction recording.
+
+If the canonical transfer endpoint is unavailable, the plugin may fall back to the legacy two-step withdraw/deposit sequence as a degraded-mode resilience path:
 
 1. Withdraw from sender via `POST /api/balances/{uuid}/withdraw`.
 2. Deposit to receiver via `POST /api/balances/{uuid}/deposit`.
-3. If the deposit fails, the plugin attempts a compensating deposit back to the sender.
-4. A transaction record is written to `POST /api/transactions` as a best-effort audit log (a recording failure does not revert a completed transfer).
+3. If the deposit fails, attempt a compensating deposit back to the sender.
+4. Treat the fallback path as non-canonical and non-atomic relative to `POST /api/balances/transfer`.
 
-> **Note:** True atomicity between balance updates and transaction records is a planned improvement. See [Known Limitations](#known-limitations).
+> **Note:** The transfer contract lives in [`docs/contracts/transfer-flow.md`](./docs/contracts/transfer-flow.md). Legacy fallback behavior exists for resilience only and carries compensation risk.
 
 ### Token lifecycle
 
@@ -199,7 +207,7 @@ The Craftalism API exposes three resource groups under `/api`. All `GET` endpoin
 | Resource | Endpoints |
 |---|---|
 | Players | `GET /players`, `GET /players/{uuid}`, `GET /players/name/{name}`, `POST /players` |
-| Balances | `GET /balances`, `GET /balances/{uuid}`, `GET /balances/top`, `POST /balances`, `PUT /balances/{uuid}/set`, `POST /balances/{uuid}/deposit`, `POST /balances/{uuid}/withdraw` |
+| Balances | `GET /balances`, `GET /balances/{uuid}`, `GET /balances/top`, `POST /balances`, `PUT /balances/{uuid}/set`, `POST /balances/{uuid}/deposit`, `POST /balances/{uuid}/withdraw`, `POST /balances/transfer` |
 | Transactions | `GET /transactions`, `GET /transactions/{id} (legacy alias: /transactions/id/{id})`, `GET /transactions/from/{uuid}`, `GET /transactions/to/{uuid}`, `POST /transactions` |
 
 All error responses conform to RFC 9457 `ProblemDetail`. Full interactive documentation is available at `/api-docs` when the API is running.
@@ -209,22 +217,21 @@ All error responses conform to RFC 9457 `ProblemDetail`. Full interactive docume
 ## Known Limitations
 
 - Incident surfacing is backend-first: incidents are persisted, but there is no dashboard incident view yet.
-- The dashboard has no authentication layer — anyone who can reach port 8080 can view economy data.
+- The dashboard has no application-level auth or RBAC; the deployment baseline protects access at the HTTPS edge with basic auth.
 - Dashboard action buttons (Add Player, Add Balance) are UI placeholders; no create flows are implemented.
-- No CI pipeline is configured across any repository.
-- No end-to-end or integration tests run against a live stack.
+- CI coverage now spans all repositories, but depth is still uneven across the ecosystem (for example auth-server static analysis/security scanning and broader frontend/integration coverage).
+- Live-stack validation exists as a deployment smoke flow, but broader end-to-end and failure-path coverage is still limited.
 
 ---
 
 ## Roadmap
 
-- Atomic balance transfer: integrate `POST /api/transactions` with `BalanceService.transfer()` so the ledger and balances update in a single transaction.
 - Dashboard authentication and authorization.
 - Pagination, filtering, and sorting on all API list endpoints.
 - React Router and full CRUD flows in the dashboard.
-- CI pipeline (lint, typecheck, build, test) across all repositories.
+- Deepen CI beyond the current baseline with stricter static analysis, security scanning, and broader integration coverage.
 - End-to-end integration tests against a live stack.
-- Reverse proxy configuration with TLS termination.
+- Application-level dashboard authorization beyond edge basic auth.
 
 ---
 
