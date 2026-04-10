@@ -18,6 +18,7 @@ Current ecosystem status: **Release-ready for the current baseline, with final d
 Latest governance docs:
 - `docs/audit/2026-04-08-ecosystem-release-readiness-reverification.md`
 - `docs/audit/2026-04-09-ecosystem-implementation-audit.md`
+- `docs/portfolio-evolution-roadmap.md`
 
 Audit trail note:
 - `docs/audit/2026-04-09-ecosystem-release-readiness-audit.md` is preserved as the point-in-time NO-GO audit that triggered the later fixes now reflected in the current state
