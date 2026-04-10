@@ -13,10 +13,14 @@
 
 ## Status
 
-Current ecosystem status: **Repo-verified; production deployment requires configured HTTPS edge and dashboard access credentials**
+Current ecosystem status: **Release-ready for the current baseline, with final deployment confidence coming from the smoke flow on the exact release SHAs/tags**
 
-See governance audit:
-- docs/audit/2026-04-06-ecosystem-release-readiness.md
+Latest governance docs:
+- `docs/audit/2026-04-08-ecosystem-release-readiness-reverification.md`
+- `docs/audit/2026-04-09-ecosystem-implementation-audit.md`
+
+Audit trail note:
+- `docs/audit/2026-04-09-ecosystem-release-readiness-audit.md` is preserved as the point-in-time NO-GO audit that triggered the later fixes now reflected in the current state
 
 Contributor workflow note:
 - [Codex usage checklist](docs/codex-usage-checklist.md)

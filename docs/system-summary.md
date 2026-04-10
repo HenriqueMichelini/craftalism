@@ -121,4 +121,8 @@ Then it should:
 ## Latest Ecosystem Status
 
 See:
-- 2026-04-06 Ecosystem Release Readiness
+- `docs/audit/2026-04-08-ecosystem-release-readiness-reverification.md` for the current release-ready state
+- `docs/audit/2026-04-09-ecosystem-implementation-audit.md` for the latest root-owned implementation audit
+
+Historical note:
+- `docs/audit/2026-04-09-ecosystem-release-readiness-audit.md` remains a preserved point-in-time NO-GO assessment and should be read together with the later re-verification/implementation documents rather than as the final current verdict
