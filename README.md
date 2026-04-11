@@ -174,8 +174,8 @@ curl -f "https://${AUTH_SITE_ADDRESS}/actuator/health"
 |---|---|
 | Dashboard | `https://${DASHBOARD_SITE_ADDRESS}` |
 | Authorization Server | `https://${AUTH_SITE_ADDRESS}` |
-| API | Internal-only in the production deployment |
-| API docs (Swagger) | Internal-only in the production deployment |
+| API | `https://<api-hostname>` (for example `https://api.craftalism.com`) |
+| API docs (Swagger) | Internal-only by default; available only if the deployed API surface intentionally exposes `/api-docs` through the public API hostname |
 | Minecraft | `localhost:25565` |
 
 ---
