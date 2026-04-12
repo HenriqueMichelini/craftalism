@@ -19,7 +19,7 @@ This architecture allows the economy to be administered, audited, and observed e
 \section*{System Architecture}
 % -----------------------------------------------------------------------------
 
-The platform is composed of five independent services, each in its own repository. Service-to-service communication uses HTTP; the Minecraft plugin authenticates to the Craftalism API with OAuth2 bearer tokens, while the Dashboard currently calls the API without authentication.
+The platform is composed of five independent services, each in its own repository. Service-to-service communication uses HTTP; the Minecraft plugin authenticates to the Craftalism API with OAuth2 bearer tokens, while the Dashboard consumes the API's public read surface through the deployment edge.
 
 \begin{figure}[h]
 \centering
@@ -51,7 +51,7 @@ The platform is composed of five independent services, each in its own repositor
   \item The Minecraft plugin authenticates with the \textbf{Authorization Server} on startup using the \code{client\_credentials} OAuth2 grant, and caches the resulting JWT access token.
   \item All subsequent plugin calls to the \textbf{Craftalism API} carry that JWT as a \code{Bearer} token in the \code{Authorization} header.
   \item The API validates tokens \emph{locally} by fetching the Authorization Server's public keys from \code{/oauth2/jwks} — no per-request round-trip to the auth server is required.
-  \item The \textbf{Dashboard} calls the same API through an Nginx reverse proxy and renders the data for administrators; these requests are currently unauthenticated.
+  \item The \textbf{Dashboard} calls the same API through the deployment edge and reverse proxy. The Dashboard has no application-level authentication of its own, but the deployment baseline protects dashboard access at the HTTPS edge.
   \item Both the API and the Authorization Server persist state to a shared \textbf{PostgreSQL} instance, in separate databases (\code{craftalism} and \code{authserver}).
 \end{enumerate}
 
@@ -81,8 +81,8 @@ The platform is composed of five independent services, each in its own repositor
 The following conventions apply across all modules and are referenced throughout this document.
 
 \begin{itemize}
-  \item \textbf{Authentication:} The Minecraft plugin authenticates with short-lived JWT access tokens issued via the \code{client\_credentials} grant. The Craftalism API validates these tokens locally using the published JWKS.
+  \item \textbf{Authentication:} The Minecraft plugin authenticates with short-lived JWT access tokens issued via the \code{client\_credentials} grant. The Craftalism API validates these tokens locally using the published JWKS, while dashboard reads currently use the API's public read surface.
   \item \textbf{Error responses:} The API returns RFC 9457 \code{ProblemDetail} payloads for all error conditions, with a consistent set of extension fields: \code{type}, \code{detail}, \code{status}, \code{timestamp}, \code{path}, and \code{errors}.
-  \item \textbf{Scope enforcement:} Read operations require the \code{api:read} scope. Write operations require \code{api:write}.
+  \item \textbf{Scope enforcement:} Protected write operations require \code{api:write}. Public read routes remain intentionally exposed for the dashboard MVP and must be documented explicitly as such.
   \item \textbf{Containerization:} All services are distributed as Docker images and orchestrated with Docker Compose via the \texttt{craftalism-deployment} repository.
 \end{itemize}

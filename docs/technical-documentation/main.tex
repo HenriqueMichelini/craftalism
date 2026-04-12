@@ -95,15 +95,13 @@ this appendix highlights variables whose values must be consistent across servic
 cd craftalism-deployment
 cp env.example .env
 # Edit .env with required secrets
-docker compose pull
-docker compose up -d
+./prod
 \end{bashlist}
 
 \subsection*{Health checks}
 \begin{bashlist}
-curl -f http://localhost:3000/actuator/health   # Craftalism API
-curl -f http://localhost:9000/actuator/health   # Authorization Server
-curl -I  http://localhost:8080/                 # Dashboard
+curl -u "${DASHBOARD_BASIC_AUTH_USERNAME}:<dashboard-password>" -I "https://${DASHBOARD_SITE_ADDRESS}/"
+curl -f "https://${AUTH_SITE_ADDRESS}/actuator/health"
 \end{bashlist}
 
 \subsection*{Run a module's tests}

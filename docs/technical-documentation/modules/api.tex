@@ -25,9 +25,10 @@ The Craftalism API is the central data service for the economy platform. It expo
 \begin{itemize}
   \item Registers new players and resolves existing players by UUID or display name.
   \item Creates, reads, and overwrites balance records for registered players.
+  \item Processes atomic balance transfers through the canonical \code{POST /api/balances/transfer} route.
   \item Processes deposit and withdrawal operations on individual balances.
-  \item Stores transaction records between players as an audit log.
-  \item Enforces OAuth2 scope rules: \code{api:read} for all \code{GET} requests, \code{api:write} for all mutating requests.
+  \item Stores transaction records between players as an audit log and transfer history surface.
+  \item Exposes public read routes for the dashboard MVP and enforces \code{api:write} on protected mutating requests.
   \item Returns standardized RFC 9457 \code{ProblemDetail} payloads for all error conditions.
   \item Exposes interactive API documentation via Swagger UI on the local profile.
 \end{itemize}
@@ -59,10 +60,10 @@ The API is a stateless OAuth2 resource server. JWTs are validated locally agains
   \toprule
   {\tableheadstyle Scope} & {\tableheadstyle Permitted operations} \\
   \midrule
-  \code{SCOPE\_api:read}  & \code{GET /api/**} \\
-  \code{SCOPE\_api:write} & \code{POST}, \code{PUT}, \code{PATCH}, \code{DELETE} on \code{/api/**} \\
+  \code{Public read surface} & \code{GET /api/players}, \code{GET /api/balances}, \code{GET /api/transactions} and related read endpoints for the dashboard MVP. \\
+  \code{SCOPE\_api:write} & \code{POST}, \code{PUT}, \code{PATCH}, \code{DELETE} on protected \code{/api/**} mutating routes. \\
   \midrule
-  \multicolumn{2}{@{}l}{\small\textit{Public (no token required): \code{GET /actuator/health}, \code{/swagger-ui/**}, \code{/v3/api-docs/**}}} \\
+  \multicolumn{2}{@{}l}{\small\textit{Also public: \code{GET /actuator/health}, \code{/swagger-ui/**}, \code{/v3/api-docs/**}}} \\
   \bottomrule
 \end{tabularx}
 
@@ -105,17 +106,18 @@ All errors are returned as RFC 9457 \code{ProblemDetail} with the following exte
   PUT    & \code{/api/balances/\{uuid\}/set}      & Overwrite a balance amount. \\
   POST   & \code{/api/balances/\{uuid\}/deposit}  & Deposit funds. \\
   POST   & \code{/api/balances/\{uuid\}/withdraw} & Withdraw funds. \\
+  POST   & \code{/api/balances/transfer}         & Canonical atomic transfer route with idempotency semantics. \\
   \midrule
   \multicolumn{3}{@{}l}{\small\textit{\textbf{Transactions}}} \\
   GET    & \code{/api/transactions}              & List all transactions. \\
-  GET    & \code{/api/transactions/id/\{id\}}     & Get transaction by ID. \\
+  GET    & \code{/api/transactions/\{id\}}        & Get transaction by ID (\code{/api/transactions/id/\{id\}} remains a legacy alias). \\
   GET    & \code{/api/transactions/from/\{uuid\}} & List outgoing transactions for a player. \\
   GET    & \code{/api/transactions/to/\{uuid\}}   & List incoming transactions for a player. \\
   POST   & \code{/api/transactions}              & Store a transaction record. \\
   \bottomrule
 \end{tabularx}
 
-\important{\code{POST /api/transactions} stores a record only. It does \textbf{not} call balance transfer logic. Balance state and the transaction ledger are not updated atomically. See Known Limitations.}
+\important{The canonical transfer path is \code{POST /api/balances/transfer}. Legacy withdraw/deposit-plus-transaction sequences are degraded fallback behavior and must not be documented as the primary flow.}
 
 % =============================================================================
 \section{Tech Stack}
@@ -167,11 +169,9 @@ All errors are returned as RFC 9457 \code{ProblemDetail} with the following exte
 % =============================================================================
 
 \begin{itemize}
-  \item \code{POST /api/transactions} does not atomically update balances. The ledger and balance state can diverge if the system fails between a balance operation and the subsequent transaction record write.
   \item List endpoints return all records in a single response with no pagination or filtering support. This will degrade under large datasets.
   \item Integration tests run against H2 in-memory, not a real PostgreSQL instance. Schema and query compatibility gaps may exist.
   \item CORS allowed origins are hard-coded in \code{SecurityConfig} (localhost ports only), so non-local Dashboard or operator UIs require code changes and rebuilds.
-  \item The repository workflow publishes Docker images on version tags but does not execute automated tests before image publication.
 \end{itemize}
 
 % =============================================================================
@@ -179,9 +179,7 @@ All errors are returned as RFC 9457 \code{ProblemDetail} with the following exte
 % =============================================================================
 
 \begin{itemize}
-  \item Integrate \code{POST /api/transactions} with \code{BalanceService.transfer()} so ledger and balance updates occur atomically within a single database transaction.
   \item Add cursor-based or offset pagination and server-side filtering to all list endpoints.
   \item Add integration tests against real PostgreSQL with actual JWT-bearing requests.
   \item Externalize allowed origins into environment variables or profile-specific properties.
-  \item Extend the GitHub Actions workflow to run tests before publishing images.
 \end{itemize}

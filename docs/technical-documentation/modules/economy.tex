@@ -23,7 +23,8 @@ The Economy plugin runs inside the Minecraft server and serves as the player-fac
   \item Executes all API calls asynchronously using \code{CompletableFuture} to avoid blocking the main server thread.
   \item Authenticates with the Authorization Server using \code{client\_credentials} and caches the resulting JWT.
   \item Caches player and balance records locally using Caffeine to minimize round-trip latency.
-  \item Implements compensating rollback for \code{/pay}: if a deposit to the receiver fails after a successful withdrawal from the sender, the plugin attempts to reverse the withdrawal.
+  \item Targets the canonical \code{POST /api/balances/transfer} route for \code{/pay} and treats fallback behavior as degraded mode only.
+  \item Implements compensating rollback for degraded \code{/pay} fallback: if a deposit to the receiver fails after a successful withdrawal from the sender, the plugin attempts to reverse the withdrawal.
   \item Provisions new players and balance records automatically on player join if they do not yet exist in the API.
   \item Formats currency amounts according to configurable locale, symbol, and fallback rules.
 \end{itemize}
@@ -48,10 +49,10 @@ The codebase uses a strict four-layer architecture. Dependencies point inward; n
   \item Validate sender permissions and command arguments.
   \item Resolve sender from cache or API; resolve receiver by name from the API.
   \item Validate amount (positive, non-zero) and reject self-payment.
-  \item Withdraw from sender via \code{POST /api/balances/\{uuid\}/withdraw}.
-  \item Deposit to receiver via \code{POST /api/balances/\{uuid\}/deposit}.
-  \item If deposit fails: attempt compensating deposit back to sender (best effort).
-  \item Write transaction record via \code{POST /api/transactions} (best effort — failure does not revert a completed transfer).
+  \item Call the canonical transfer route \code{POST /api/balances/transfer} with an idempotency key and treat the API response as the source of truth for balance movement and transaction recording.
+  \item If the canonical route is unavailable, fall back to \code{POST /api/balances/\{uuid\}/withdraw} followed by \code{POST /api/balances/\{uuid\}/deposit}.
+  \item If degraded fallback deposit fails: attempt compensating deposit back to sender (best effort).
+  \item Treat the fallback path as non-canonical and non-atomic relative to \code{POST /api/balances/transfer}.
   \item Map final result status to player-facing message.
 \end{enumerate}
 
@@ -120,7 +121,6 @@ On \code{PlayerJoinEvent}, the plugin calls \code{GET /api/players/\{uuid\}}. If
   \item \code{BootContainer\#shutdown()} is a placeholder and performs no resource cleanup.
   \item \code{/setbalance} input validation accepts numeric digit strings only before scaling; decimal input is rejected inconsistently with other commands.
   \item No integration or end-to-end tests run against a live API instance.
-  \item The release workflow builds with \code{-x test}, so plugin releases are currently published without automated test execution.
 \end{itemize}
 
 \section{Roadmap}
@@ -130,5 +130,4 @@ On \code{PlayerJoinEvent}, the plugin calls \code{GET /api/players/\{uuid\}}. If
   \item Implement \code{BootContainer\#shutdown()} to release HTTP client and cache resources cleanly.
   \item Fix \code{/setbalance} input validation to accept decimal amounts consistently with \code{/pay}.
   \item Add integration tests against a live Craftalism API instance.
-  \item Update the release workflow to execute the test suite before packaging and publishing artifacts.
 \end{itemize}

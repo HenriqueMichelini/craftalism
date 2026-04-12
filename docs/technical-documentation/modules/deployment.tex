@@ -14,7 +14,7 @@
 
 \section{Overview}
 
-The Deployment repository contains the Docker Compose configuration and environment templates needed to run the entire Craftalism platform. It contains no application source code; all services are pulled from pre-built images published to the GitHub Container Registry. A single \code{docker compose up} command starts every service in the correct dependency order.
+The Deployment repository contains the Docker Compose configuration and environment templates needed to run the entire Craftalism platform. It contains no application source code; all services are pulled from pre-built images published to the GitHub Container Registry. The current baseline entrypoint is the \code{./prod} workflow, which refreshes pinned image digests, prepares the production environment, and starts the stack in the correct dependency order.
 
 \section{Responsibilities}
 
@@ -23,7 +23,7 @@ The Deployment repository contains the Docker Compose configuration and environm
   \item Manages a one-shot database initializer that creates the \code{authserver} database before the Authorization Server starts.
   \item Downloads and installs the Craftalism Economy plugin JAR into the Minecraft server container at startup using the configured \code{ECONOMY\_VERSION}.
   \item Templates an \code{env.example} file covering all required and optional configuration for the full stack.
-  \item Exposes services on defined host ports for external access.
+  \item Exposes the platform through the deployment edge with HTTPS and dashboard access control in the production baseline.
 \end{itemize}
 
 \section{Architecture and Design}
@@ -60,9 +60,9 @@ The Deployment repository contains the Docker Compose configuration and environm
   \toprule
   {\tableheadstyle Service} & {\tableheadstyle Host Port} & {\tableheadstyle Notes} \\
   \midrule
-  Dashboard           & 8080  & HTTP. No TLS termination configured. \\
-  Craftalism API      & 3000  & HTTP. \\
-  Authorization Server & 9000 & HTTP. \\
+  Dashboard           & 443 / 80  & HTTPS at the deployment edge; proxied to the internal dashboard service. \\
+  Craftalism API      & Internal  & Reached through the edge or internal network wiring. \\
+  Authorization Server & 443 / 80 & HTTPS at the deployment edge for externally reachable issuer traffic. \\
   Minecraft           & 25565 & Game traffic (TCP/UDP). \\
   RCON                & 25575 & Remote console. \\
   \bottomrule
@@ -108,17 +108,14 @@ The Deployment repository contains the Docker Compose configuration and environm
 \section{Known Limitations}
 
 \begin{itemize}
-  \item Image tags in \code{docker-compose.yml} reference \code{latest}, making deployments non-deterministic and non-reproducible across environments.
-  \item No TLS termination or reverse proxy is configured; all services are exposed directly on host ports over plain HTTP.
   \item No \code{generate-keys.sh} script exists despite being referenced in \code{env.example}. RSA keys must be generated manually.
-  \item No automated health verification or smoke test suite runs post-startup.
+  \item Final release confidence still depends on running the deployment smoke flow against the exact intended release SHAs or tags.
 \end{itemize}
 
 \section{Roadmap}
 
 \begin{itemize}
-  \item Pin all image tags to specific digest or version strings for reproducible deployments.
   \item Add a \code{generate-keys.sh} script for RSA key pair generation and formatting.
-  \item Provide an example reverse proxy configuration with TLS termination (Nginx, Caddy, or Traefik).
-  \item Add automated post-startup smoke tests that verify all service health endpoints.
+  \item Add a generated operator evidence pack that records image digests, health checks, and smoke results after successful deployments.
+  \item Add broader failure-path and recovery verification beyond the current baseline smoke flow.
 \end{itemize}

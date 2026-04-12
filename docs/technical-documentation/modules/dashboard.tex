@@ -14,7 +14,7 @@
 
 \section{Overview}
 
-The Dashboard is a read-oriented single-page application that lets administrators inspect the current state of the economy. It connects to the Craftalism API through an Nginx reverse proxy and presents player records, balance amounts, and transaction history in a consistent table-based interface. The frontend has no direct database access and no authentication layer of its own.
+The Dashboard is a read-oriented single-page application that lets administrators inspect the current state of the economy. It connects to the Craftalism API through an Nginx reverse proxy and presents player records, balance amounts, and transaction history in a consistent table-based interface. The frontend has no direct database access and no application-level authentication layer of its own; the deployment baseline protects dashboard access at the HTTPS edge.
 
 \section{Responsibilities}
 
@@ -84,11 +84,10 @@ In Docker, \code{docker-entrypoint.sh} generates \code{/runtime-config.js} befor
 \section{Known Limitations}
 
 \begin{itemize}
-  \item The dashboard has no authentication layer. Anyone who can reach port 8080 can view all economy data.
+  \item The dashboard has no application-level authentication or RBAC. Access control is currently provided by the deployment edge rather than by the frontend itself.
   \item ``Add Player'' and ``Add Balance'' action buttons are UI placeholders; no create flows are implemented or wired to the API.
   \item Sidebar navigation items are presentational only; routing between sections is not implemented.
   \item No automated tests exist for the API client, hooks, or table components.
-  \item The repository workflow builds and publishes Docker images on tags but does not run linting or type checking before publication.
 \end{itemize}
 
 \section{Roadmap}
@@ -98,5 +97,4 @@ In Docker, \code{docker-entrypoint.sh} generates \code{/runtime-config.js} befor
   \item Implement React Router and route-driven navigation for all dashboard sections.
   \item Build create, update, and delete flows for players, balances, and transactions.
   \item Add unit and integration tests for the API client, hooks, and table rendering.
-  \item Extend the GitHub Actions workflow to run linting and type checking before publishing images.
 \end{itemize}
