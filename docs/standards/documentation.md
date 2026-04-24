@@ -14,9 +14,9 @@ Cross-repo contracts MUST be documented consistently with a single canonical sou
 
 ## Minimum Requirements
 - Canonical ownership:
-  - API contracts/routes: `craftalism-api` docs are source of truth.
-  - Auth issuer behavior: `craftalism-authorization-server` docs are source of truth.
-  - Deployment env/host alignment: `craftalism-deployment` docs are source of truth.
+  - Shared contracts in `docs/contracts/` are the canonical documentation source of truth for cross-repo contract behavior.
+  - Shared standards in `docs/standards/` are the canonical documentation source of truth for cross-repo policy and documentation rules.
+  - Owner repos own the behavior defined by the contracts they publish and must keep their repo-local documentation synchronized with the canonical shared documentation.
 - Synchronization requirements:
   - Any contract change requires same-cycle doc updates in owner + consumer repos.
   - Root ecosystem docs must reflect current canonical transfer/auth flows.

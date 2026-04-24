@@ -6,9 +6,9 @@ This page points to current status signals and preserved audit history.
 
 It is **not** source of truth.
 
-Canonical sources:
+Relevant references:
 - [System Summary](/home/henriquemichelini/IdeaProjects/craftalism/docs/system-summary.md)
-- [docs/audit/](/home/henriquemichelini/IdeaProjects/craftalism/docs/audit)
+- [docs/audit/](/home/henriquemichelini/IdeaProjects/craftalism/docs/audit) for historical evidence and status snapshots
 
 ## Current Status Pointers
 
