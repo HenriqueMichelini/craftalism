@@ -101,15 +101,21 @@ Ask these questions in order:
 
 ## How Codex Should Use This
 
-For any repo-specific task, Codex should read in this order:
+This file is the ecosystem overview.
 
-1. `docs/governance-precedence.md`
-2. `docs/system-summary.md`
-3. `docs/contracts/...`
-4. `docs/standards/...`
-5. `docs/audit/2026-04-04-ecosystem-technical-audit.md`
-6. repo-local `docs/repo-contract-map.md`
-7. repo-local `docs/repo-requirement-pack.md`
+It is not the primary task router and it does not define authority rules by itself.
+
+For documentation navigation:
+
+1. read `docs/index.md`
+2. use `docs/wiki/index.md` for compressed navigation
+3. follow only the relevant canonical sources for the task
+
+For authority and conflict resolution:
+
+- use `docs/governance-precedence.md`
+
+For repo-specific work, use this file to understand system shape, ownership, and repository boundaries before moving into the relevant contract, standard, and repo-local documentation.
 
 Then it should:
 - identify owned vs consumed responsibilities
@@ -125,4 +131,5 @@ See:
 - `docs/audit/2026-04-09-ecosystem-implementation-audit.md` for the latest root-owned implementation audit
 
 Historical note:
+- audit files are historical evidence and status references, not required default reading for ordinary implementation work
 - `docs/audit/2026-04-09-ecosystem-release-readiness-audit.md` remains a preserved point-in-time NO-GO assessment and should be read together with the later re-verification/implementation documents rather than as the final current verdict
