@@ -124,12 +124,6 @@ Then it should:
 - only change what belongs to that repository
 - avoid redefining cross-repo contracts locally
 
-## Latest Ecosystem Status
+For authority and conflict resolution:
 
-See:
-- `docs/audit/2026-04-08-ecosystem-release-readiness-reverification.md` for the current release-ready state
-- `docs/audit/2026-04-09-ecosystem-implementation-audit.md` for the latest root-owned implementation audit
-
-Historical note:
-- audit files are historical evidence and status references, not required default reading for ordinary implementation work
-- `docs/audit/2026-04-09-ecosystem-release-readiness-audit.md` remains a preserved point-in-time NO-GO assessment and should be read together with the later re-verification/implementation documents rather than as the final current verdict
+- use `docs/governance-precedence.md`

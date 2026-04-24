@@ -1,36 +1,103 @@
 # Governance Precedence
 
 ## Purpose
-Define how Craftalism should resolve conflicts between audit findings, shared contracts, shared standards, and repo-local control documents.
 
-## Precedence Order
-When documents conflict, use this order of authority:
+Define how Craftalism resolves conflicts between:
 
-1. Shared contracts in `docs/contracts/`
-2. Shared standards in `docs/standards/`
-3. `docs/system-summary.md`
-4. Repo-local `docs/repo-contract-map.md`
-5. Repo-local `docs/repo-requirement-pack.md`
-6. `docs/audit/2026-04-04-ecosystem-technical-audit.md`
+* shared contracts
+* shared standards
+* system-level documentation
+* repo-local control documents
+* audit artifacts
 
-## Interpretation Rule
-The audit is a point-in-time diagnostic artifact, not the final source of authority once contracts and standards have been formalized.
+This file is the **single source of truth for authority and conflict resolution** in the documentation layer.
 
-That means:
-- the audit may contain stale findings after governance docs are updated
-- contracts and standards supersede stale audit language
-- repo-local docs must align with current contracts/standards, not preserve outdated audit assumptions
+---
+
+## Authority Order
+
+When documents conflict, resolve in the following order:
+
+1. Shared contracts (`docs/contracts/`)
+2. Shared standards (`docs/standards/`)
+3. System summary (`docs/system-summary.md`)
+4. Repository-local documentation:
+
+   * `AGENTS.md`
+   * `repo-contract-map.md`
+   * `repo-requirement-pack.md`
+5. Relevant audit artifacts (`docs/audit/`), used as historical evidence
+
+---
+
+## Audit Interpretation Rules
+
+Audit artifacts are **not authoritative sources of truth**.
+
+They are:
+
+* point-in-time assessments of the system
+* useful for identifying gaps, inconsistencies, and risks
+* inputs to governance evolution, not final decisions
+
+Rules:
+
+* A newer audit may supersede an older audit.
+* Multiple audits may be relevant depending on the issue.
+* Audit findings only become authoritative after being formalized into:
+
+  * a shared contract, or
+  * a shared standard
+* Do not treat any single audit as permanently authoritative.
+
+---
 
 ## Required Behavior
-- If the audit and a contract disagree, follow the contract and flag the audit statement as stale.
-- If a repo-local control doc disagrees with a shared contract or standard, update the repo-local doc.
-- If a shared contract or standard is ambiguous, resolve the ambiguity there before starting repo implementation work.
-- Do not let stale audit statements expand or redirect implementation scope.
 
-## Audit Freshness Note
-Each audit should be treated as valid only until superseded by:
-- a newer audit, or
-- a formalized contract/standard update that resolves or reclassifies the finding
+* If an audit and a contract disagree:
+
+  * follow the contract
+  * flag the audit statement as stale
+
+* If a repo-local document disagrees with a shared contract or standard:
+
+  * update the repo-local document
+
+* If a contract or standard is ambiguous:
+
+  * resolve the ambiguity in the contract/standard before implementation
+
+* Do not allow audit findings to:
+
+  * redefine contracts
+  * expand implementation scope
+  * override formalized rules
+
+---
+
+## Audit Freshness
+
+Each audit is valid only until superseded by:
+
+* a newer audit, or
+* a contract/standard update that resolves the finding
+
+Older audits may still be useful as context, but must not override newer information.
+
+---
 
 ## Codex Rule
-Before repo-specific work, Codex should read this file first and use it to resolve any apparent contradiction in the documentation layer.
+
+Before performing repo-specific work:
+
+1. Read this file
+2. Use it to resolve any contradictions between documents
+3. Follow the authority order strictly
+4. Prefer contracts and standards over all other sources
+
+Audit artifacts should be consulted only when:
+
+* investigating issues
+* validating behavior
+* understanding historical decisions
+* explicitly routed by `docs/index.md` or `docs/wiki/`
