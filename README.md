@@ -59,25 +59,29 @@ This enables clearer system boundaries, consistent behavior across clients, and 
 ## System Architecture
 
 Craftalism is organized as a set of independent services forming a backend platform. Clients (such as the Minecraft server and the dashboard) interact with this platform over HTTP using OAuth2 bearer tokens.
-```
-                     ┌──────────────────────────────────────────┐
-                     │            Craftalism Platform           │
-                     │                                          │
-  Browser ─────────▶ │  Edge (:80/:443, TLS + basic auth)       │
-                     │       │                                  │
-                     │       ▼                                  │
-                     │  Dashboard (internal)                    │
-                     │       │ /api/* (reverse proxy)           │
-                     │       ▼                                  │
-  client  ─────────▶ │  API (internal) ◀──── JWT validation ──  │
-  (Minecraft)        │       │              via JWKS            │
-                     │       ▼                                  │
-                     │  PostgreSQL (internal)                   │
-                     │                                          │
-  client  ─────────▶ │  Authorization Server (internal,         │
-  (OAuth2 token req) │  published via edge auth hostname)       │
-                     │  Issues RSA-signed JWTs                  │
-                     └──────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    browser[Browser]
+    plugin[Minecraft plugin]
+
+    subgraph platform[Craftalism Platform]
+        edge[Edge<br/>Nginx, TLS, basic auth]
+        dashboard[Dashboard<br/>React admin UI]
+        api[API<br/>Players, balances, transactions]
+        auth[Authorization Server<br/>OAuth2/OIDC, RSA-signed JWTs]
+        db[(PostgreSQL<br/>craftalism + authserver databases)]
+    end
+
+    browser --> edge
+    edge --> dashboard
+    dashboard -->|/api/* reverse proxy| api
+
+    plugin -->|Bearer JWT API requests| api
+    plugin -->|client_credentials token request| auth
+
+    api -->|JWT validation via JWKS| auth
+    api --> db
+    auth --> db
 ```
 
 ### Request flow
