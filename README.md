@@ -38,13 +38,14 @@ This separation enables the economy to be inspected, audited, and administered e
 - Centralized player, balance, and transaction management via a typed REST API.
 - OAuth2 machine-to-machine authentication: all plugin-to-API traffic is token-gated.
 - Administrative dashboard for read-oriented visibility into players, balances, and transactions, protected at the deployment edge.
+- Market browsing, quoting, and trade execution through a separate Minecraft plugin client backed by API-owned market rules.
 - Full containerized deployment: the entire platform starts with a single `docker compose up`.
 
 ---
 
 ## System Architecture
 
-Craftalism is organized as five independent repositories. Each service has a defined boundary and communicates over HTTP with OAuth2 bearer tokens.
+Craftalism is organized as independent repositories with explicit ownership boundaries. Runtime services communicate over HTTP with OAuth2 bearer tokens, while governance, infrastructure, market-client, and workstation responsibilities are kept separate.
 
 ```
                      ┌──────────────────────────────────────────┐
@@ -86,6 +87,9 @@ Craftalism is organized as five independent repositories. Each service has a def
 | [`craftalism-authorization-server`](https://github.com/HenriqueMichelini/craftalism-authorization-server) | OAuth2/OIDC server. Issues and publishes RSA-signed JWTs for internal service authentication. | Java 17, Spring Authorization Server |
 | [`craftalism-dashboard`](https://github.com/HenriqueMichelini/craftalism-dashboard) | Admin web UI. Provides operational visibility into players, balances, and transactions. | React 19, TypeScript 5, Tailwind CSS 3 |
 | [`craftalism-deployment`](https://github.com/HenriqueMichelini/craftalism-deployment) | Docker Compose orchestration. Brings up the full platform from a single environment file. | Docker Compose, PostgreSQL 18 |
+| [`craftalism-infra`](https://github.com/HenriqueMichelini/craftalism-infra) | AWS infrastructure boundary for the single-node deployment model. | Terraform, AWS, Caddy |
+| [`craftalism-market`](https://github.com/HenriqueMichelini/craftalism-market) | Minecraft market plugin client for browsing, quote, and trade execution flows. | Java 21, Paper API |
+| [`craftalism-workstation`](https://github.com/HenriqueMichelini/craftalism-workstation) | Local governance-aware operator tooling for repository context, verification, and release checks. | Bash |
 
 ---
 

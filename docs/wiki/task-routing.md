@@ -7,10 +7,10 @@ This page provides minimal reading paths for common work types.
 It is **not** source of truth.
 
 Canonical sources:
-- [docs/governance-precedence.md](/home/henriquemichelini/IdeaProjects/craftalism/docs/governance-precedence.md)
-- [docs/system-summary.md](/home/henriquemichelini/IdeaProjects/craftalism/docs/system-summary.md)
-- [docs/contracts/](/home/henriquemichelini/IdeaProjects/craftalism/docs/contracts)
-- [docs/standards/](/home/henriquemichelini/IdeaProjects/craftalism/docs/standards)
+- [docs/governance-precedence.md](../governance-precedence.md)
+- [docs/system-summary.md](../system-summary.md)
+- [docs/contracts/](../contracts/)
+- [docs/standards/](../standards/)
 
 ## Read Paths
 
@@ -19,11 +19,11 @@ Canonical sources:
 - Root governance or documentation work:
   read governance precedence, system summary, `standards/documentation.md`, then only the affected root docs.
 - Contract change:
-  read the relevant contract, [contract-change-checklist.md](/home/henriquemichelini/IdeaProjects/craftalism/docs/standards/contract-change-checklist.md), affected standards, and affected repo-local docs.
+  read the relevant contract, [contract-change-checklist.md](../standards/contract-change-checklist.md), affected standards, and affected repo-local docs.
 - Audit or reverification:
   read governance precedence, system summary, relevant contracts and standards, then the latest relevant files in `docs/audit/` as historical evidence.
 - Release validation:
-  read system summary, [compatibility-matrix.md](/home/henriquemichelini/IdeaProjects/craftalism/docs/compatibility-matrix.md), relevant CI/testing standards, then the latest relevant audit artifacts.
+  read system summary, [compatibility-matrix.md](../compatibility-matrix.md), relevant CI/testing standards, then the latest relevant audit artifacts.
 
 ## Avoid By Default
 

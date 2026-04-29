@@ -41,6 +41,9 @@ All repos MUST run branch-level verification on push and pull request, and relea
 - `craftalism-dashboard`: enforce lint + typecheck + test + build gates.
 - `craftalism-authorization-server`: enforce auth integration and config validation checks.
 - `craftalism-deployment`: enforce compose config validation and smoke deployment checks.
+- `craftalism-infra`: enforce Terraform formatting, initialization without backend, validation, and ingress policy checks.
+- `craftalism-market`: enforce plugin compile/build/test checks before branch merge and release.
+- `craftalism-workstation`: enforce shell syntax or equivalent command validation for operator tooling when changes are made.
 - Root `craftalism`: maintain ecosystem CI policy documentation and shared contract checklist.
 
 ## Enforcement Strategy

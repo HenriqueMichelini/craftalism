@@ -13,7 +13,7 @@ This roadmap assumes the current architectural constraints remain unchanged:
 - single AWS EC2 instance
 - Docker Compose runtime
 - PostgreSQL as the persistence layer
-- separate API, authorization server, dashboard, and Minecraft plugin repos
+- separate API, authorization server, dashboard, economy plugin, market plugin, deployment, infrastructure, and workstation repos
 - low-cost, hobby-scale operating model
 
 It is intentionally focused on higher engineering maturity rather than
@@ -21,21 +21,23 @@ rearchitecture.
 
 Primary audit basis:
 
-- [2026-04-10-ecosystem-platform-audit.md](/home/henriquemichelini/IdeaProjects/craftalism/docs/audit/2026-04-10-ecosystem-platform-audit.md)
-- [testing.md](/home/henriquemichelini/IdeaProjects/craftalism/docs/standards/testing.md)
-- [ci-cd.md](/home/henriquemichelini/IdeaProjects/craftalism/docs/standards/ci-cd.md)
-- [security-access-control.md](/home/henriquemichelini/IdeaProjects/craftalism/docs/standards/security-access-control.md)
-- [documentation.md](/home/henriquemichelini/IdeaProjects/craftalism/docs/standards/documentation.md)
+- [2026-04-10-ecosystem-platform-audit.md](audit/2026-04-10-ecosystem-platform-audit.md)
+- [testing.md](standards/testing.md)
+- [ci-cd.md](standards/ci-cd.md)
+- [security-access-control.md](standards/security-access-control.md)
+- [documentation.md](standards/documentation.md)
 
 Repo-local backlog files:
 
-- [root backlog](/home/henriquemichelini/IdeaProjects/craftalism/docs/portfolio-backlog.md)
-- [API backlog](/home/henriquemichelini/IdeaProjects/craftalism-api/docs/portfolio-backlog.md)
-- [authorization-server backlog](/home/henriquemichelini/IdeaProjects/craftalism-authorization-server/docs/portfolio-backlog.md)
-- [dashboard backlog](/home/henriquemichelini/IdeaProjects/craftalism-dashboard/docs/portfolio-backlog.md)
-- [deployment backlog](/home/henriquemichelini/IdeaProjects/craftalism-deployment/docs/portfolio-backlog.md)
-- [economy backlog](/home/henriquemichelini/IdeaProjects/craftalism-economy/docs/portfolio-backlog.md)
-- [infra backlog](/home/henriquemichelini/IdeaProjects/craftalism-infra/docs/portfolio-backlog.md)
+- [root backlog](portfolio-backlog.md)
+- [API backlog](../../craftalism-api/docs/portfolio-backlog.md)
+- [authorization-server backlog](../../craftalism-authorization-server/docs/portfolio-backlog.md)
+- [dashboard backlog](../../craftalism-dashboard/docs/portfolio-backlog.md)
+- [deployment backlog](../../craftalism-deployment/docs/portfolio-backlog.md)
+- [economy backlog](../../craftalism-economy/docs/portfolio-backlog.md)
+- [infra backlog](../../craftalism-infra/docs/portfolio-backlog.md)
+- [market backlog](../../craftalism-market/docs/repo-requirement-pack.md)
+- [workstation docs](../../craftalism-workstation/docs/workstation-spec.md)
 
 ## Target Outcome
 

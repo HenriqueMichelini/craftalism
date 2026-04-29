@@ -10,8 +10,8 @@ platform narrative.
 
 Source:
 
-- [portfolio-evolution-roadmap.md](/home/henriquemichelini/IdeaProjects/craftalism/docs/portfolio-evolution-roadmap.md)
-- [2026-04-10-ecosystem-platform-audit.md](/home/henriquemichelini/IdeaProjects/craftalism/docs/audit/2026-04-10-ecosystem-platform-audit.md)
+- [portfolio-evolution-roadmap.md](portfolio-evolution-roadmap.md)
+- [2026-04-10-ecosystem-platform-audit.md](audit/2026-04-10-ecosystem-platform-audit.md)
 
 ## Now
 
@@ -60,11 +60,11 @@ Source:
 ## Dependencies
 
 - Cross-repo CI evidence depends on work in
-  [craftalism-deployment backlog](/home/henriquemichelini/IdeaProjects/craftalism-deployment/docs/portfolio-backlog.md).
+  [craftalism-deployment backlog](../../craftalism-deployment/docs/portfolio-backlog.md).
 - Security/auth narrative depends on work in
-  [craftalism-authorization-server backlog](/home/henriquemichelini/IdeaProjects/craftalism-authorization-server/docs/portfolio-backlog.md).
+  [craftalism-authorization-server backlog](../../craftalism-authorization-server/docs/portfolio-backlog.md).
 - API contract narrative depends on work in
-  [craftalism-api backlog](/home/henriquemichelini/IdeaProjects/craftalism-api/docs/portfolio-backlog.md).
+  [craftalism-api backlog](../../craftalism-api/docs/portfolio-backlog.md).
 
 ## Done When
 

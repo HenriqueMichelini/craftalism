@@ -40,6 +40,9 @@ Every repository MUST maintain automated tests for its critical responsibilities
 - `craftalism-dashboard`: own fetch/error-state and route-client correctness tests.
 - `craftalism-authorization-server`: own token issuance and issuer config behavior tests.
 - `craftalism-deployment`: own environment startup and inter-service connectivity smoke tests.
+- `craftalism-infra`: own Terraform validation and ingress-policy regression checks.
+- `craftalism-market`: own command, GUI/session, cache, quote, execution, and rejection-mapping tests.
+- `craftalism-workstation`: own command behavior checks for repo detection, governance routing, verification, and release-report scaffolding where automation exists.
 
 ## Enforcement Strategy
 - Make testing jobs required status checks for protected branches.
