@@ -27,11 +27,15 @@ For authority and conflict resolution, use [docs/governance-precedence.md](gover
   [docs/contracts/](contracts/)
 - Shared standards:
   [docs/standards/](standards/)
+- AI-assisted delivery workflow:
+  [docs/workflows/ai-delivery-workflow.md](workflows/ai-delivery-workflow.md)
 
 ## Task Routes
 
 - Implementation or repo-specific work:
   use [docs/wiki/task-routing.md](wiki/task-routing.md), then hand off to the target repo's `AGENTS.md`, `repo-contract-map.md`, and `repo-requirement-pack.md`.
+- AI-assisted task creation or execution:
+  use [docs/workflows/ai-delivery-workflow.md](workflows/ai-delivery-workflow.md), [docs/templates/technical-card.md](templates/technical-card.md), and the relevant command prompt in [docs/workflows/commands/](workflows/commands/).
 - Contract-oriented work:
   use [docs/wiki/contracts-map.md](wiki/contracts-map.md) and then read the canonical contract file.
 - Standards or policy questions:
@@ -44,6 +48,7 @@ For authority and conflict resolution, use [docs/governance-precedence.md](gover
 - [docs/audit/](audit/): historical evidence, not default truth.
 - [docs/release-history.md](release-history.md): release record, read when release history matters.
 - [docs/compatibility-matrix.md](compatibility-matrix.md): release compatibility reference, not general onboarding.
+- [docs/templates/](templates/) and [docs/workflows/commands/](workflows/commands/): reusable workflow artifacts, not canonical behavior.
 - `docs/portfolio-*.md`, `docs/craftalism-diagnostics-and-timing-spec.md`, and `docs/technical-documentation/`: specialized references, not default Codex context.
 
 ## Rules

@@ -7,256 +7,182 @@
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)](https://docs.docker.com/compose/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-lightgrey)](./LICENSE)
 
-> A backend platform with externalized state and OAuth2-secured communication, designed to support multiple clients — including a Minecraft server and a web dashboard.
+Craftalism is a multi-repository platform that moves Minecraft economy and market state into an OAuth2-secured backend. The API owns business state and contract behavior; the Minecraft plugins, dashboard, deployment, infrastructure, and operator tooling consume or support that platform.
 
----
+This root repository contains the ecosystem governance layer, not an application runtime. It owns shared contracts, standards, system-level guidance, and historical audit records. Runtime commands belong to the component repositories listed below.
 
-## Status
+## Project status
 
-Current ecosystem status: **Release-ready for the current baseline, with final deployment confidence coming from the smoke flow on the exact release SHAs/tags**
+The routed status documents identify the current baseline and its historical verification:
 
-Latest governance docs:
-- `docs/audit/2026-04-08-ecosystem-release-readiness-reverification.md`
-- `docs/audit/2026-04-09-ecosystem-implementation-audit.md`
-- `docs/portfolio-evolution-roadmap.md`
+- [Status map](docs/wiki/status-map.md)
+- [Latest broad platform audit](docs/audit/2026-04-10-ecosystem-platform-audit.md)
+- [Release-readiness reverification](docs/audit/2026-04-08-ecosystem-release-readiness-reverification.md)
 
-Audit trail note:
-- `docs/audit/2026-04-09-ecosystem-release-readiness-audit.md` is preserved as the point-in-time NO-GO audit that triggered the later fixes now reflected in the current state
+Audit files are point-in-time evidence, not current authority. Contracts and standards take precedence, and release confidence still depends on running the deployment smoke flow against the exact selected tags and image digests. The [compatibility matrix](docs/compatibility-matrix.md) currently defines the required format but contains an example rather than a recorded release set.
 
-Contributor workflow note:
-- [Codex usage checklist](docs/codex-usage-checklist.md)
+## Architecture
 
-## Overview
-
-Craftalism is a backend platform that externalizes application state and exposes it through a centralized REST API secured with OAuth2.
-
-Multiple clients interact with this platform through well-defined contracts — including a Minecraft server and a web dashboard. Instead of embedding logic and state inside each client, the system enforces a clear separation of concerns: clients issue requests, while the platform owns all business logic and persistence.
-
-This approach allows the system to behave like a real backend platform rather than a single application with embedded logic. New clients can be added without changing core system behavior, and all interactions remain consistent, authenticated, and observable.
-
-**Core capabilities across the platform:**
-
-- Centralized player, balance, and transaction management via a typed REST API.
-- OAuth2 machine-to-machine authentication: all client-to-API traffic is token-gated.
-- Multiple clients (Minecraft server, web dashboard) interacting through the same contracts.
-- Administrative dashboard for read-oriented visibility into system state.
-- Full containerized deployment: the entire platform starts with a single `docker compose up`.
----
-
-## Core Idea
-
-Craftalism explores a simple architectural shift:
-
-> Clients should not own state.
-
-Instead:
-- State and business logic live in a centralized platform (API)
-- Clients interact through contracts and authentication
-- New clients can be introduced without changing core system behavior
-
-This enables clearer system boundaries, consistent behavior across clients, and a structure that more closely resembles production backend systems.
-
-## System Architecture
-
-Craftalism is organized as a set of independent services forming a backend platform. Clients (such as the Minecraft server and the dashboard) interact with this platform over HTTP using OAuth2 bearer tokens.
 ```mermaid
 flowchart LR
-    browser[Browser]
-    plugin[Minecraft plugin]
->>>>>>> a646a61e3c119cd68cf57a77932c80c628128a41
+    browser["Browser"]
 
-    subgraph platform[Craftalism Platform]
-        edge[Edge<br/>Nginx, TLS, basic auth]
-        dashboard[Dashboard<br/>React admin UI]
-        api[API<br/>Players, balances, transactions]
-        auth[Authorization Server<br/>OAuth2/OIDC, RSA-signed JWTs]
-        db[(PostgreSQL<br/>craftalism + authserver databases)]
+    subgraph minecraft["Minecraft / Paper"]
+        economy["Economy plugin"]
+        market["Market plugin"]
+    end
+
+    subgraph host["Single-node deployment"]
+        edge["Host Caddy edge<br/>TLS and dashboard basic auth"]
+        dashboard["Dashboard<br/>React + Nginx"]
+        bff["Dashboard BFF"]
+        api["API<br/>Economy and market authority"]
+        auth["Authorization Server<br/>OAuth2/OIDC and JWKS"]
+        db[("PostgreSQL<br/>craftalism + authserver databases")]
     end
 
     browser --> edge
     edge --> dashboard
-    dashboard -->|/api/* reverse proxy| api
+    dashboard -->|"same-origin /api/*"| bff
+    bff -->|"public reads and authenticated writes"| api
+    bff -->|"client_credentials"| auth
 
-    plugin -->|Bearer JWT API requests| api
-    plugin -->|client_credentials token request| auth
+    economy -->|"client_credentials"| auth
+    economy -->|"Bearer JWT API calls"| api
+    market -->|"client_credentials"| auth
+    market -->|"snapshot, quote, and execute"| api
 
-    api -->|JWT validation via JWKS| auth
+    api -->|"issuer metadata and JWKS"| auth
     api --> db
     auth --> db
 ```
 
-### Request flow
-
-1. On startup, the Minecraft client authenticates with the **Authorization Server** using `client_credentials` and caches the resulting JWT.
-2. All subsequent client requests to the **API** carry that JWT as a `Bearer` token.
-3. The API validates tokens locally by fetching the Authorization Server's public keys from `/oauth2/jwks` — no round-trip to the auth server per request.
-4. The **Dashboard** calls the same API through an Nginx reverse proxy, while the deployment edge enforces HTTPS and dashboard access control.
-5. The **API** and **Authorization Server** both persist state to the shared **PostgreSQL** instance, in separate databases (`craftalism` and `authserver`).
-
----
+The authorization server issues RSA-signed JWTs. The API validates protected requests using the configured issuer metadata and JWKS; it does not call the authorization server for every request. The production deployment binds application services to loopback ports and relies on the infrastructure-managed Caddy edge for public HTTP and HTTPS ingress.
 
 ## Repositories
 
-| Repository | Description | Primary Stack |
-|---|---|---|
-| [`craftalism-api`](https://github.com/HenriqueMichelini/craftalism-api) | Core REST API. Owns all business logic, state, and contracts across the platform. | Java 17, Spring Boot 3.5, JPA, Flyway |
-| [`craftalism-authorization-server`](https://github.com/HenriqueMichelini/craftalism-authorization-server) | OAuth2/OIDC server. Issues and publishes RSA-signed JWTs for all platform clients. | Java 17, Spring Authorization Server |
-| [`craftalism-deployment`](https://github.com/HenriqueMichelini/craftalism-deployment) | Deployment layer. Defines runtime configuration and orchestrates the full platform via Docker Compose. | Docker Compose, PostgreSQL 18 |
-| [`craftalism-dashboard`](https://github.com/HenriqueMichelini/craftalism-dashboard) | Web client for administrative visibility into platform state. | React 19, TypeScript 5, Tailwind CSS 3 |
-| [`craftalism-economy`](https://github.com/HenriqueMichelini/craftalism-economy) | Minecraft client. Delegates all economy logic and state to the platform via authenticated API calls. | Java 21, Paper API, Caffeine |
+| Repository | Responsibility | Primary stack |
+| --- | --- | --- |
+| [`craftalism`](https://github.com/HenriqueMichelini/craftalism) | Shared contracts, standards, governance, system documentation, and audits. | Markdown, Mermaid |
+| [`craftalism-api`](https://github.com/HenriqueMichelini/craftalism-api) | Authoritative players, balances, transactions, transfers, incidents, market pricing, quotes, execution, and persistence. | Java 17, Spring Boot 3.5, JPA, Flyway |
+| [`craftalism-authorization-server`](https://github.com/HenriqueMichelini/craftalism-authorization-server) | OAuth2/OIDC issuer, machine-client registration, discovery metadata, and JWKS. | Java 17, Spring Boot 3.5, Spring Authorization Server |
+| [`craftalism-dashboard`](https://github.com/HenriqueMichelini/craftalism-dashboard) | Economy visibility plus player, balance, and market administration through the deployment BFF. | React 19, TypeScript 5, Vite 7, Tailwind CSS 3 |
+| [`craftalism-deployment`](https://github.com/HenriqueMichelini/craftalism-deployment) | Docker Compose runtime, local/test/production workflows, dashboard BFF, release-image pinning, and smoke checks. | Docker Compose, Node.js BFF, PostgreSQL 18, Nginx |
+| [`craftalism-economy`](https://github.com/HenriqueMichelini/craftalism-economy) | Minecraft economy commands, API orchestration, caching, and player-facing fallback behavior. | Java 21, Paper 1.21.4, Caffeine |
+| [`craftalism-market`](https://github.com/HenriqueMichelini/craftalism-market) | Minecraft market GUI, snapshot cache, quote consumption, trade execution, and inventory settlement. | Java 21, Paper 1.21.4 |
+| [`craftalism-infra`](https://github.com/HenriqueMichelini/craftalism-infra) | Single-node AWS infrastructure, ingress policy, host bootstrap, Caddy TLS edge, and host monitoring. | Terraform, AWS, Caddy |
+| [`craftalism-workstation`](https://github.com/HenriqueMichelini/craftalism-workstation) | Local governance-aware repository navigation, verification, and release-readiness tooling. | Shell scripts |
 
----
+## Core behavior
 
-## Tech Stack
+### Economy
 
-| Concern | Technology |
-|---|---|
-| Client integration | Java 21, Paper API 1.21.4 |
-| Backend services | Java 17, Spring Boot 3.5, Spring Security, Spring Authorization Server |
-| Persistence | PostgreSQL 18, Spring Data JPA, Flyway |
-| API documentation | springdoc-openapi (Swagger UI) |
-| Frontend | React 19, TypeScript 5, Vite 7, Tailwind CSS 3 |
-| Authentication | OAuth2.1 / OIDC, RSA-signed JWTs, JWKS |
-| Caching (client) | Caffeine |
-| Containerization | Docker, Docker Compose, Nginx |
-| Testing | JUnit 5, Mockito, MockBukkit, Spring Test, H2 |
+When a player joins, the economy plugin ensures that the API has a player and balance record and caches read results locally. The canonical `/pay` path is `POST /api/balances/transfer`, with an idempotency key; the API performs the balance movement and transaction recording atomically.
 
----
+The economy plugin also contains a legacy withdraw/deposit fallback. It is disabled by default (`pay-legacy-fallback-enabled: false`) and, when explicitly enabled, is a degraded non-atomic path with compensation risk. See the [transfer flow contract](docs/contracts/transfer-flow.md).
 
-## Quick Start
+### Market
 
-The fastest way to run the full platform is via the deployment repository, which provides a pre-configured Docker Compose stack.
+The market plugin renders `/market` from the API snapshot, requests quantity-sensitive quotes, and executes buys and sells with API-issued quote tokens and the opaque `snapshotVersion`. Pricing, stock, momentum, rejection decisions, and durable market state remain API-owned. Cached snapshots may be used only for read-only degraded browsing when execution is unavailable. See the [market contract](docs/contracts/market-contract.md).
+
+### Dashboard
+
+The dashboard displays players, balances, transactions, market trades, categories, items, events, and event templates. Implemented administrative flows include player and balance changes plus market category, item, event, event-template, and drift-reset operations.
+
+Browser requests remain same-origin. In the composed stack, Nginx forwards `/api/*` to the deployment-owned dashboard BFF. The BFF allows public reads, obtains scoped machine tokens for an allowlist of writes and protected market-admin reads, and keeps OAuth client secrets out of browser code.
+
+## API surface and access model
+
+| Area | Main routes | Current access |
+| --- | --- | --- |
+| Players | `/api/players` | `GET` is public; writes require `api:write`. |
+| Balances and transfers | `/api/balances`, `/api/balances/transfer` | `GET` is public; writes require `api:write`. |
+| Transactions | `/api/transactions` | `GET` is public; writes require `api:write`. |
+| Transfer incidents | `/api/transfer-incidents` | `GET` is public. |
+| Market | `/api/market/snapshot`, `/api/market/trades`, `/api/market/quotes`, `/api/market/execute` | Snapshot and trade reads are public; quote and execute require `api:write`. |
+| Market administration | `/api/dashboard/market/*` | Event, event-template, and drift routes require `market:admin`; category and item writes require `api:write`. |
+
+Most validation and domain errors use Spring `ProblemDetail`. Market business rejections use the separate stable-code payload defined by the market contract. The canonical transaction paths are documented in the [transaction routes contract](docs/contracts/transaction-routes.md).
+
+Swagger UI is available at `/api-docs` and the OpenAPI document at `/v3/api-docs` when SpringDoc is enabled. Local Compose enables both; production disables both by default.
+
+## Run locally
+
+The supported full-stack workflow lives in `craftalism-deployment`.
 
 ### Prerequisites
 
+- Git
 - Docker Engine 20.10+
 - Docker Compose v2+
-- 4+ GB available RAM, 20+ GB disk
+- JDK 21 for local economy and market plugin builds
+- At least 4 GB of available RAM
 
-### Steps
-
-**1. Clone the deployment repository.**
+### Start the stack
 
 ```bash
 git clone https://github.com/HenriqueMichelini/craftalism-deployment.git
 cd craftalism-deployment
+./local
 ```
 
-**2. Create your environment file.**
+`./local` creates `.env` and `.env.local` from the included examples when absent, clones or updates the required sibling repositories, builds both plugin JARs, and starts the Compose stack from local sources. If sibling repositories already exist, the bootstrap script fetches them and may check out and fast-forward their configured branches; review the [deployment README](https://github.com/HenriqueMichelini/craftalism-deployment#readme) before using it in a workspace with local branch work.
 
-```bash
-cp env.example .env
-```
-
-**3. Set the required secrets in `.env`.**
-
-| Variable | Description |
-|---|---|
-| `DB_PASSWORD` | PostgreSQL password. |
-| `MINECRAFT_CLIENT_SECRET` | OAuth2 client secret for the Minecraft client. |
-| `RSA_PRIVATE_KEY` | PEM RSA private key with literal `\n` separators. |
-| `RSA_PUBLIC_KEY` | PEM RSA public key with literal `\n` separators. |
-| `AUTH_ISSUER_URI` | Externally reachable URL of the Authorization Server. |
-| `ECONOMY_VERSION` | GitHub Release tag of the economy client to download. |
-
-Generate a random secret with `openssl rand -base64 32`. For RSA key generation instructions, see the [deployment repository README](https://github.com/HenriqueMichelini/craftalism-deployment).
-
-**4. Start the stack.**
-
-```bash
-./prod
-```
-
-This command automatically refreshes pinned image digests into `.env`, pre-pulls production images, and starts the production stack. To skip the digest refresh step:
-
-```bash
-SKIP_DIGEST_REFRESH=1 ./prod
-```
-
-To stop the stack:
-
-```bash
-./prod down
-```
-
-**5. Verify all services are healthy.**
-
-```bash
-curl -u "${DASHBOARD_BASIC_AUTH_USERNAME}:<dashboard-password>" -I "https://${DASHBOARD_SITE_ADDRESS}/"
-curl -f "https://${AUTH_SITE_ADDRESS}/actuator/health"
-```
-
-### Service endpoints
+Local endpoints:
 
 | Service | URL |
-|---|---|
-| Dashboard | `https://${DASHBOARD_SITE_ADDRESS}` |
-| Authorization Server | `https://${AUTH_SITE_ADDRESS}` |
-| API | `https://<api-hostname>` (for example `https://api.craftalism.com`) |
-| API docs (Swagger) | Internal-only by default; available only if the deployed API surface intentionally exposes `/api-docs` through the public API hostname |
+| --- | --- |
+| Dashboard | `http://localhost:8080` |
+| Authorization Server | `http://localhost:9000` |
+| API | `http://localhost:3000` |
+| Swagger UI | `http://localhost:3000/api-docs` |
 | Minecraft | `localhost:25565` |
 
----
+Verify the HTTP services:
 
-## How the Economy Works
+```bash
+curl -f http://localhost:9000/actuator/health
+curl -f http://localhost:3000/actuator/health
+curl -f http://localhost:8080/
+```
 
-### Player join
+Stop the stack from the deployment repository:
 
-When a player connects to the Minecraft server, the client ensures they exist in the API and have a balance record. If either is missing, the client creates them automatically. Results are cached locally in Caffeine to minimize API calls for subsequent lookups.
+```bash
+./local down
+```
 
-### `/pay` transfer
+For staging and production, follow the deployment repository's `./test` and `./prod` workflows. Production requires immutable service versions and image digests, persistent RSA keys, non-placeholder database/RCON/OAuth secrets, aligned issuer configuration, and the infrastructure-managed host edge. Do not treat the example `.env` values as production-ready.
 
-The canonical `/pay` flow is an atomic API transfer. The client should call `POST /api/balances/transfer` with an idempotency key and treat that endpoint as the source of truth for balance movement and transaction recording.
+## Documentation and contribution workflow
 
-If the canonical transfer endpoint is unavailable, the client may fall back to the legacy two-step withdraw/deposit sequence as a degraded-mode resilience path:
+Start with the documentation router rather than scanning the full documentation tree:
 
-1. Withdraw from sender via `POST /api/balances/{uuid}/withdraw`.
-2. Deposit to receiver via `POST /api/balances/{uuid}/deposit`.
-3. If the deposit fails, attempt a compensating deposit back to the sender.
-4. Treat the fallback path as non-canonical and non-atomic relative to `POST /api/balances/transfer`.
+1. Read [`docs/index.md`](docs/index.md).
+2. Read [`docs/wiki/index.md`](docs/wiki/index.md).
+3. Follow the smallest routed set of contracts and standards for the task.
+4. For component work, continue with that repository's `AGENTS.md`, `docs/repo-contract-map.md`, and `docs/repo-requirement-pack.md`.
 
-> **Note:** The transfer contract lives in [`docs/contracts/transfer-flow.md`](./docs/contracts/transfer-flow.md). Legacy fallback behavior exists for resilience only and carries compensation risk.
+Useful root references:
 
-### Token lifecycle
+- [Governance precedence](docs/governance-precedence.md)
+- [System summary](docs/system-summary.md)
+- [Contracts map](docs/wiki/contracts-map.md)
+- [Standards map](docs/wiki/standards-map.md)
+- [Codex usage checklist](docs/codex-usage-checklist.md)
+- [AI delivery workflow](docs/workflows/ai-delivery-workflow.md)
+- [Technical card template](docs/templates/technical-card.md)
 
-The client obtains a JWT from the Authorization Server on startup using `client_credentials`. The token is cached and reused across all API calls until it expires, at which point a new token is fetched transparently. Downstream services (the API) validate tokens locally using the Authorization Server's published JWKS — no per-request auth server call is required.
+This repository has no application build or test command. Run verification in the component repository being changed; each component documents its own Gradle, npm, Compose, Terraform, or shell workflow.
 
----
+## Known limitations
 
-## API Overview
-
-The Craftalism API exposes three resource groups under `/api`. All `GET` endpoints are intentionally public for the dashboard MVP; all write endpoints require `api:write`.
-
-| Resource | Endpoints |
-|---|---|
-| Players | `GET /players`, `GET /players/{uuid}`, `GET /players/name/{name}`, `POST /players` |
-| Balances | `GET /balances`, `GET /balances/{uuid}`, `GET /balances/top`, `POST /balances`, `PUT /balances/{uuid}/set`, `POST /balances/{uuid}/deposit`, `POST /balances/{uuid}/withdraw`, `POST /balances/transfer` |
-| Transactions | `GET /transactions`, `GET /transactions/{id} (legacy alias: /transactions/id/{id})`, `GET /transactions/from/{uuid}`, `GET /transactions/to/{uuid}`, `POST /transactions` |
-
-All error responses conform to RFC 9457 `ProblemDetail`. Full interactive documentation is available at `/api-docs` when the API is running.
-
----
-
-## Known Limitations
-
-- Incident surfacing is backend-first: incidents are persisted, but there is no dashboard incident view yet.
-- The dashboard has no application-level auth or RBAC; the deployment baseline protects access at the HTTPS edge with basic auth.
-- Dashboard action buttons (Add Player, Add Balance) are UI placeholders; no create flows are implemented.
-- CI coverage now spans all repositories, but depth is still uneven across the ecosystem (for example auth-server static analysis/security scanning and broader frontend/integration coverage).
-- Live-stack validation exists as a deployment smoke flow, but broader end-to-end and failure-path coverage is still limited.
-
----
-
-## Roadmap
-
-- Dashboard authentication and authorization.
-- Pagination, filtering, and sorting on all API list endpoints.
-- React Router and full CRUD flows in the dashboard.
-- Deepen CI beyond the current baseline with stricter static analysis, security scanning, and broader integration coverage.
-- End-to-end integration tests against a live stack.
-- Application-level dashboard authorization beyond edge basic auth.
-
----
+- Most API `GET` routes are intentionally public for the current dashboard model. This is a weak trust boundary even when the dashboard itself is protected by edge basic auth.
+- The dashboard has no end-user OAuth login or application-level RBAC. Its BFF uses machine credentials, so API writes are not attributed to individual dashboard users.
+- The economy legacy transfer fallback is non-atomic and disabled by default.
+- The production baseline is a hobby-scale, single-node deployment. `t3.small` requires conservative memory limits and swap; `t3.medium` is the safer floor for non-trivial load.
+- The compatibility matrix is not yet populated with an exact, validated multi-repository release set.
+- CI and test depth remain uneven across the repositories; use the exact-release deployment smoke flow for cross-service validation.
 
 ## Author
 
@@ -264,8 +190,6 @@ All error responses conform to RFC 9457 `ProblemDetail`. Full interactive docume
 
 - [LinkedIn](https://www.linkedin.com/in/henrique-giammellaro-michelini/)
 - [GitHub](https://github.com/HenriqueMichelini)
-
----
 
 ## License
 

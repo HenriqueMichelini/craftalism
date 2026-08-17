@@ -21,7 +21,7 @@ This contract is owned by `craftalism-api`. Consumer repositories must conform t
 
 `craftalism-market` consumes this contract by:
 
-- displaying API-provided categories and items from `/api/market/snapshot`
+- displaying API-provided categories and items from `/api/market/snapshot`, including category `iconKey` material ids
 - requesting quotes instead of computing authoritative prices locally
 - executing trades only through API-issued quote tokens
 - treating stale, rejected, unavailable, and timeout states as player-facing UX states
@@ -36,6 +36,13 @@ This contract is owned by `craftalism-api`. Consumer repositories must conform t
 | `GET` | `/api/market/snapshot` | public | Returns category/item market snapshot data and an opaque `snapshotVersion`. |
 | `POST` | `/api/market/quotes` | `api:write` | Creates a quote for an authenticated player context and returns a `quoteToken`. |
 | `POST` | `/api/market/execute` | `api:write` | Executes a buy or sell intent using a valid quote token and snapshot version. |
+
+Snapshot category rows include:
+
+- `categoryId`
+- `displayName`
+- `iconKey`
+- `items`
 
 ## Rejection Semantics
 

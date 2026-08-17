@@ -16,6 +16,10 @@ Canonical sources:
 
 - Implementation in another repo:
   read governance precedence, system summary, the relevant contract and standards, then that repo's `AGENTS.md`, `repo-contract-map.md`, and `repo-requirement-pack.md`.
+- AI-assisted technical card:
+  read governance precedence, system summary, [AI delivery workflow](../workflows/ai-delivery-workflow.md), then use [technical-card.md](../templates/technical-card.md).
+- AI-assisted execution of an approved card:
+  read the card, follow its routed contracts and standards, then hand off to the target repo's `AGENTS.md`, `repo-contract-map.md`, and `repo-requirement-pack.md`.
 - Root governance or documentation work:
   read governance precedence, system summary, `standards/documentation.md`, then only the affected root docs.
 - Contract change:
@@ -31,3 +35,4 @@ Canonical sources:
 - Do not read all standards.
 - Do not read `docs/audit/` unless the task needs evidence or historical comparison.
 - Do not use `docs/technical-documentation/` as default Codex context.
+- Do not treat workflow templates as authority over contracts or standards.
